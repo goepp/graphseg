@@ -191,7 +191,7 @@ solver_nr <- function(gamma, sigma_sq, K,
 #' @param epsilon numerical constant used in the adaptive ridge algorithm. Should be small compared to \code{gamma} and large compared to machine precision.
 #' @param thresh relative tolerance for the convergence of the adaptive ridge iterations.
 #' @export
-solver_graph_aridge <- function(gamma, sigma_sq, adj,
+graph_aridge <- function(gamma, sigma_sq, adj,
                                 pen = 10 ^ seq(-4, 4, length = 100),
                                 maxiter = 10000,
                                 epsilon = 1e-5,
