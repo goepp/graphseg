@@ -181,6 +181,15 @@ solver_nr <- function(gamma, sigma_sq, K,
   if (iter == maxiter) warning("Warning: Newton-Raphson did not converge")
   par
 }
+#' Regularization of spatial data using adjacency graph
+#'
+#' @param gamma vector of estimated values
+#' @param sigma_sq vector of estimated variances
+#' @param adj adjacency matrix of the regions corresponding to each values
+#' @param pen penalty value parameter
+#' @param maxiter maximal number of iterations in the adaptive ridge algorithm, see details.
+#' @param epsilon numerical constant used in the adaptive ridge algorithm. Should be small compared to \code{gamma} and large compared to machine precision.
+#' @param thresh relative tolerance for the convergence of the adaptive ridge iterations.
 #' @export
 solver_graph_aridge <- function(gamma, sigma_sq, adj,
                                 pen = 10 ^ seq(-4, 4, length = 100),
