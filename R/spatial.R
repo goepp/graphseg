@@ -142,9 +142,13 @@ solver_graph_aridge_old <- function(gamma, sigma_sq, adj,
 }
 #' @export
 loglik <- function(par, gamma, sigma_sq, K, pen) {
+  pen_mat <- wcrossprod(par, par, K)[1]
+  sum((par - gamma) ^ 2 / (2 * sigma_sq)) + pen * pen_mat
+}
+#' @export
+loglik_old <- function(par, gamma, sigma_sq, K, pen) {
   pen_mat <- (t(replicate(length(par), par)) - replicate(length(par), par)) ^ 2
-  sum((par - gamma) ^ 2 / (2 * sigma_sq)) -
-    pen / 2 * sum(pen_mat * K)
+  sum((par - gamma) ^ 2 / (2 * sigma_sq)) - pen / 2 * sum(pen_mat * K)
 }
 #' @export
 hessian <- function(par, gamma, sigma_sq, K, pen) {
@@ -159,6 +163,11 @@ score <- function(par, gamma, sigma_sq, K, pen) {
   as.vector(
     (par - gamma) / sigma_sq - 2 * pen * Matrix::rowSums(pen_matrix)
   )
+}
+#' @export
+solver <- function(gamma, sigma_sq, K, pen) {
+  Solve(diag(length(gamma)) + pen * sweep(K, 1, 2 * sigma_sq, `*`),
+        gamma)
 }
 #' @export
 solver_nr <- function(gamma, sigma_sq, K,
