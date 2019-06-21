@@ -1,5 +1,5 @@
 # graphseg
-Segmented estimation of graphical data
+Segmented estimation of spatial data
 
 Performs estimation of spatial data with regularization using the adjacency structure.
 
