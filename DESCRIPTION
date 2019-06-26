@@ -11,22 +11,18 @@ License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 URL: http://github.com/goepp/graphseg
-Imports: 
-    plyr,
-    pryr,
-    limSolve,
-    igraph,
-    tidyverse,
-    reshape2,
-    mvtnorm,
-    scales,
-    bandsolve,
-    progress,
-    sf,
-    car,
-    Matrix,
-    mgcv,
-    stringr
+Imports:
+  graphics,
+  igraph, 
+  limSolve,
+  magrittr,
+  methods,
+  mgcv,
+  stringr,
+  Matrix, 
+  car,
+  sf
 RoxygenNote: 6.1.0
+Depends: R (>= 2.10)
 Suggests:
     testthat

@@ -12,7 +12,13 @@
 #' @rdname loglik
 #' @title this is a title
 #' @export
+#' @importFrom stringr str_detect
+#' @importFrom mgcv bam
+#' @importFrom stats setNames
+#' @importFrom car wcrossprod
+#' @importFrom Matrix rowSums
 #' @import graphics
+#' @import sf
 #' @importFrom igraph decompose graph_from_adjacency_matrix clusters V E spectrum
 #' @import magrittr
 #' @import methods
@@ -43,7 +49,7 @@ hessian <- function(par, gamma, sigma_sq, K, pen) {
   }
   diag(1 / sigma_sq) +
     2 * pen * K -
-    2 * pen * diag(Matrix::rowSums(K))
+    2 * pen * diag(rowSums(K))
 }
 #' @rdname loglik
 #' @export
@@ -71,9 +77,10 @@ score <- function(par, gamma, sigma_sq, K, pen) {
 #' @param pen penalty constant (must be a positive number). Higher values of \code{pen} yields a more regularized fit
 #' @seealso \code{\link{loglik}}, \code{\link{score}}, \code{\link{hessian}}
 #'
+#' @importFrom limSolve Solve
 #' @export
 solver <- function(gamma, sigma_sq, K, pen) {
-  limSolve::Solve(diag(length(gamma)) + pen * sweep(K, 1, 2 * sigma_sq, `*`),
+  Solve(diag(length(gamma)) + pen * sweep(K, 1, 2 * sigma_sq, `*`),
         gamma)
 }
 solver_nr <- function(gamma, sigma_sq, K,
@@ -83,7 +90,7 @@ solver_nr <- function(gamma, sigma_sq, K,
   while (iter < maxiter) {
     old_par <- par
     if (any(is(K) %in% "sparseMatrix")) {
-      par <- old_par - solve_ssdp(hessian(old_par, gamma, sigma_sq, K, pen),
+      par <- old_par - solve_spd(hessian(old_par, gamma, sigma_sq, K, pen),
                                   score(old_par, gamma, sigma_sq, K, pen))
     } else {
       par <- old_par - limSolve::Solve(hessian(old_par, gamma, sigma_sq, K, pen),
@@ -148,68 +155,37 @@ graph_aridge <- function(gamma, sigma_sq, adj,
   list(par = par_ls, bic = bic, laplace_bic = laplace_bic,
        bic_1 = bic_1, bic_2 = bic_2)
 }
-graph_aridge_old <- function(gamma, sigma_sq, adj,
-                         pen = 10 ^ seq(-4, 4, length = 100),
-                         maxiter = 10000,
-                         epsilon = 1e-5,
-                         thresh = 1e-8) {
-  par_ls <- vector("list", length(pen))
-  bic <- bic_1 <- bic_2 <- laplace_bic <- pen * 0
-  X <- "colnames<-"(diag(length(gamma)), colnames(adj))
-  weight_adj <- adj
-  theta <- gamma * 0
-  iter <- 1
-  ind <- 1
-  sel <- weight_adj
-  while (iter < maxiter) {
-    old_sel <- sel
-    K <- diag(apply(weight_adj, 1, sum)) - weight_adj
-    theta <- solver_nr(gamma, sigma_sq, K, pen = pen[ind])
-    weight_adj <- adj *
-      ((replicate(length(theta), theta) - t(replicate(length(theta), theta))) ^ 2 + epsilon ^ 2) ^ (-1)
-    sel <- weight_adj * ((replicate(length(theta), theta) - t(replicate(length(theta), theta))) ^ 2)
-    converge <- max(abs(old_sel - sel)) <= thresh
-    converge
-    if (converge) {
-      components <- graph_from_adjacency_matrix((sel < 0.99) * adj, mode = "undirected")
-      t <- clusters(components)$membership
-      X_sel <- sel_columns(X, t)
-      fit <- mgcv::gam(gamma ~ X_sel, family = stats::gaussian(), drop.intercept = TRUE)
-      temp <- function(ind) fit$coefficients[t[ind]]
-      par_ls[[ind]] <- setNames(sapply(1:length(t), temp), colnames(X))
-      bic[ind] <- log(length(gamma)) * ncol(X_sel) +
-        2 * loglik(par_ls[[ind]], gamma, sigma_sq, K, pen = 0)
-      bic_1[ind] <- log(length(gamma)) * ncol(X_sel)
-      bic_2[ind] <- 2 * loglik(par_ls[[ind]], gamma, sigma_sq, K, pen = 0)
-      laplace_bic[ind] <- bic[ind] - ncol(X_sel) * log(2 * pi) - sum(log(sigma_sq))
-      ind <- ind + 1
-    }
-    iter <- iter + 1
-    if (ind > length(par_ls)) break
-  }
-  list(par = par_ls, bic = bic, laplace_bic = laplace_bic,
-       bic_1 = bic_1, bic_2 = bic_2)
-}
+#' Linear solver when the matrix is symmetric positive definite
+#'
+#' @param mat the matrix
+#' @param vect the vector
+#' @return \code{mat}\eqn{^{-1} \times} \code{vec}
 #' @export
-solve_ssdp <- function(mat, vect) {
+solve_spd <- function(mat, vect) {
   R <- chol(mat)
   temp <- backsolve(R, vect, transpose = TRUE)
   result <- backsolve(R, temp, transpose = FALSE)
   result
 }
+#' Build junction tree of a graph
 #'
+#'
+#' @param g graph
+#' @param verbose whether to print progress while running. Defaults to \code{FALSE}.
+#'
+#' @importFrom igraph vcount neighborhood graph.neighborhood graph V "V<-"
 #' @export
 build_jt <- function(g, verbose = FALSE) {
   # clique and separator sets
   N <- 0
   order <- NULL
   C <- gC <- S <- list()
-  active <- rep(TRUE, igraph::vcount(g))
+  active <- rep(TRUE, vcount(g))
   # main loop
   while (sum(active) > 0) {
     # compute neighborhood
-    vois <- igraph::neighborhood(g, order = 1)
-    gvois <- igraph::graph.neighborhood(g, order = 1)
+    vois <- neighborhood(g, order = 1)
+    gvois <- graph.neighborhood(g, order = 1)
     # fillin
     fillin <- unlist(lapply(gvois, countfillin))
     # elim min fillin (among active vertices)
@@ -249,15 +225,15 @@ build_jt <- function(g, verbose = FALSE) {
     connect[[N]] <- numeric(0)
   }
   # build the JT
-  jt <- igraph::graph(edges, directed = FALSE)
-  if (!is.null(igraph::V(g)$name)) {
-    igraph::V(jt)$name <- paste0("C",
+  jt <- graph(edges, directed = FALSE)
+  if (!is.null(V(g)$name)) {
+    V(jt)$name <- paste0("C",
                                  1:length(C),
                                  "={",
-                                 sapply(C, function(z) paste0(igraph::V(g)$name[as.numeric(z)], collapse = ",")),
+                                 sapply(C, function(z) paste0(V(g)$name[as.numeric(z)], collapse = ",")),
                                  "}")
   } else {
-    igraph::V(jt)$name <- paste0("C",
+    V(jt)$name <- paste0("C",
                                  1:length(C),
                                  "={",
                                  sapply(C, function(z) paste0(as.numeric(z), collapse = ",")),
@@ -267,8 +243,13 @@ build_jt <- function(g, verbose = FALSE) {
        connect = connect, graph = jt, N = N,
        treewidth = max(unlist(lapply(C, length))))
 }
+#' Utility function for \code{buid_jt}
+#'
+#' @importFrom igraph vcount ecount
+#'
+#' @param g graph
 countfillin <- function(g) {
-  n <- igraph::vcount(g)
-  m <- igraph::ecount(g)
+  n <- vcount(g)
+  m <- ecount(g)
   return(n * (n - 1)/2 - m)
 }
