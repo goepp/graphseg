@@ -21,8 +21,12 @@ Imports:
     mvtnorm,
     scales,
     bandsolve,
-    progress
+    progress,
+    sf,
+    car,
+    Matrix,
+    mgcv,
+    stringr
 RoxygenNote: 6.1.0
 Suggests:
     testthat
-
