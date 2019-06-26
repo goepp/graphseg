@@ -135,3 +135,7 @@ solver_graph_aridge_old <- function(gamma, sigma_sq, adj,
   }
   par_ls
 }
+loglik_old <- function(par, gamma, sigma_sq, K, pen) {
+  pen_mat <- (t(replicate(length(par), par)) - replicate(length(par), par)) ^ 2
+  sum((par - gamma) ^ 2 / (2 * sigma_sq)) - pen / 2 * sum(pen_mat * K)
+}
