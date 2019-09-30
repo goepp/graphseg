@@ -12,7 +12,7 @@ solve_spd(mat, vect)
 \item{vect}{the vector}
 }
 \value{
-\code{mat}\eqn{^{-1} \times} \code{vec}
+\code{mat}\eqn{^{-1}} \code{vec}
 }
 \description{
 Linear solver when the matrix is symmetric positive definite

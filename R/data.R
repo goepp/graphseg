@@ -31,3 +31,4 @@
 #' ggplot(paris) + geom_sf()
 #' }
 "paris"
+

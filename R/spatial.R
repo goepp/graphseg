@@ -159,7 +159,7 @@ graph_aridge <- function(gamma, sigma_sq, adj,
 #'
 #' @param mat the matrix
 #' @param vect the vector
-#' @return \code{mat}\eqn{^{-1} \times} \code{vec}
+#' @return \code{mat}\eqn{^{-1}} \code{vec}
 #' @export
 solve_spd <- function(mat, vect) {
   R <- chol(mat)
