@@ -32,7 +32,11 @@ loglik <- function(par, gamma, sigma_sq, K, pen) {
   if (length(par) != length(gamma) | length(par) != length(sigma_sq)) {
     stop("Error: length of par, gamma, and sigma_sq must agree")
   }
+  if (is.matrix(K)) {
   pen_mat <- car::wcrossprod(par, par, K)[1]
+  } else {# when K is a sparse Matrix
+    pen_mat <- car::wcrossprod(par, par, as.matrix(K))[1]
+  }
   sum((par - gamma) ^ 2 / (2 * sigma_sq)) + pen * pen_mat
 }
 #' @rdname loglik
@@ -79,9 +83,14 @@ score <- function(par, gamma, sigma_sq, K, pen) {
 #'
 #' @importFrom limSolve Solve
 #' @export
-solver <- function(gamma, sigma_sq, K, pen) {
+solver <- function(gamma, sigma_sq, K, pen, ginv = FALSE) {
+  if (ginv) {
   Solve(diag(length(gamma)) + pen * sweep(K, 1, 2 * sigma_sq, `*`),
         gamma)
+  } else {
+    solve(diag(length(gamma)) + pen * sweep(K, 1, 2 * sigma_sq, `*`),
+          gamma)
+  }
 }
 solver_nr <- function(gamma, sigma_sq, K,
                       pen, thresh = 1e-8, maxiter = 100) {
@@ -129,9 +138,9 @@ graph_aridge <- function(gamma, sigma_sq, adj,
   while (iter < maxiter) {
     old_sel <- sel
     K <- diag(apply(weight_adj, 1, sum)) - weight_adj
-    theta <- solver(gamma, sigma_sq, K, pen = pen[ind])
-    weight_adj <- adj *
-      ((replicate(length(theta), theta) - t(replicate(length(theta), theta))) ^ 2 + epsilon ^ 2) ^ (-1)
+    theta <- solver(gamma, sigma_sq, K, pen = pen[ind], ginv = FALSE)[, 1]
+    weight_adj <- adj /
+      ((replicate(length(theta), theta) - t(replicate(length(theta), theta))) ^ 2 + epsilon ^ 2)
     sel <- weight_adj * ((replicate(length(theta), theta) - t(replicate(length(theta), theta))) ^ 2)
     converge <- max(abs(old_sel - sel)) <= thresh
     converge
@@ -252,4 +261,97 @@ countfillin <- function(g) {
   n <- vcount(g)
   m <- ecount(g)
   return(n * (n - 1)/2 - m)
+}
+#' Segmentation using graph structure
+#' @param gamma entry vector to regularize
+#' @param graph \url{igraph} giving the regularization structure
+#' @param lambda regularizing constant
+#' @param weights weights for gamma. Default value is one.
+#' @param delta Computational constant in the adaptive ridge reweighting formula.
+#' @param tol Tolerance to test for convergence of the adaptive ridge
+agraph_one_lambda <- function(gamma, graph, lambda = 1e0, weights = NULL,
+                   delta = 1e-6, tol = 1e-10,
+                   thresh = 0.01) {
+  gamma <- as.vector(gamma)
+  lambda <- as.vector(lambda)
+  p <- length(gamma)
+  if (is.null(weights)) {
+    weights <- rep(1, p)
+  }
+  if (!(class(graph) %in% "igraph")) {
+    stop("Graph must be in igraph format")
+  }
+  edgelist_tmp <- as_edgelist(graph, names = FALSE)
+  edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
+  adjacency <- as(as_adjacency_matrix(graph), "symmetricMatrix")
+  sel <- sel_old <- adj
+  converge <- FALSE
+  weighted_laplacian_init <- lambda * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
+  chol_init <- Cholesky(weighted_laplacian_init)
+  while (!converge) {
+    weighted_laplacian <- lambda * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
+    chol <- update(chol_init, weighted_laplacian)
+    theta <- solve(chol, weights * gamma)
+    adjacency@x <- 1 / ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
+    sel@x <- (theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 /
+      ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
+    converge <- all(abs(sel@x - sel_old@x) < tol)
+    sel_old <- sel
+  }
+  graph_del <- graph %>% delete_edges(which((sel@x > 1 - thresh)[order(edgelist[, 2])]))
+  theta <- ave(as.vector(gamma), components(graph_del)$membership)
+  return(theta)
+}
+#' Segmentation using graph structure
+#' @param gamma entry vector to regularize
+#' @param graph \url{igraph} giving the regularization structure
+#' @param lambda regularizing constant
+#' @param weights weights for gamma. Default value is one.
+#' @param delta Computational constant in the adaptive ridge reweighting formula.
+#' @param tol Tolerance to test for convergence of the adaptive ridge
+#' @export
+agraph <- function(gamma, graph, lambda = 10 ^ seq(-2, 2, length.out = 100),
+                   weights = NULL,
+                   delta = 1e-6, tol = 1e-10,
+                   thresh = 0.01, itermax = 5000) {
+  gamma <- as.vector(gamma)
+  lambda <- as.vector(lambda)
+  p <- length(gamma)
+  if (is.null(weights)) {
+    weights <- rep(1, p)
+  }
+  bic <- rep(0, length(lambda))
+  result <- matrix(NA, p, length(lambda))
+  ind <- 1
+  iter <- 1
+  if (!(class(graph) %in% "igraph")) {
+    stop("Graph must be in igraph format")
+  }
+  edgelist_tmp <- as_edgelist(graph, names = FALSE)
+  edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
+  adjacency <- as(as_adjacency_matrix(graph), "symmetricMatrix")
+  sel <- adj
+  converge <- FALSE
+  weighted_laplacian_init <- lambda[1] * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
+  chol_init <- Cholesky(weighted_laplacian_init)
+  while (iter < itermax) {
+    sel_old <- sel
+    weighted_laplacian <- lambda[ind] * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
+    chol <- update(chol_init, weighted_laplacian)
+    theta <- solve(chol, weights * gamma)
+    adjacency@x <- 1 / ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
+    sel@x <- (theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 /
+      ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
+    converge <- all(abs(sel@x - sel_old@x) < tol)
+    if (converge) {
+      graph_del <- graph %>% delete_edges(which((sel@x > 1 - thresh)[order(edgelist[, 2])]))
+      segmentation <- components(graph_del)$membership
+      result[, ind] <- ave(as.vector(gamma), segmentation)
+      bic[ind] <- sum(weights * (result[, ind] - gamma) ^ 2) + log(p) * max(segmentation)
+      ind <- ind + 1
+    }
+    iter <- iter + 1
+    if (ind > length(lambda)) break
+  }
+  return(list(result = result, bic = bic))
 }
