@@ -33,7 +33,7 @@ loglik <- function(par, gamma, sigma_sq, K, pen) {
     stop("Error: length of par, gamma, and sigma_sq must agree")
   }
   if (is.matrix(K)) {
-  pen_mat <- car::wcrossprod(par, par, K)[1]
+    pen_mat <- car::wcrossprod(par, par, K)[1]
   } else {# when K is a sparse Matrix
     pen_mat <- car::wcrossprod(par, par, as.matrix(K))[1]
   }
@@ -85,8 +85,8 @@ score <- function(par, gamma, sigma_sq, K, pen) {
 #' @export
 solver <- function(gamma, sigma_sq, K, pen, ginv = FALSE) {
   if (ginv) {
-  Solve(diag(length(gamma)) + pen * sweep(K, 1, 2 * sigma_sq, `*`),
-        gamma)
+    Solve(diag(length(gamma)) + pen * sweep(K, 1, 2 * sigma_sq, `*`),
+          gamma)
   } else {
     solve(diag(length(gamma)) + pen * sweep(K, 1, 2 * sigma_sq, `*`),
           gamma)
@@ -100,10 +100,10 @@ solver_nr <- function(gamma, sigma_sq, K,
     old_par <- par
     if (any(is(K) %in% "sparseMatrix")) {
       par <- old_par - solve_spd(hessian(old_par, gamma, sigma_sq, K, pen),
-                                  score(old_par, gamma, sigma_sq, K, pen))
+                                 score(old_par, gamma, sigma_sq, K, pen))
     } else {
       par <- old_par - limSolve::Solve(hessian(old_par, gamma, sigma_sq, K, pen),
-                             score(old_par, gamma, sigma_sq, K, pen))
+                                       score(old_par, gamma, sigma_sq, K, pen))
     }
     converge <-  max(abs(old_par - par)) < thresh
     if (converge) break
@@ -121,12 +121,14 @@ solver_nr <- function(gamma, sigma_sq, K,
 #' @param maxiter maximal number of iterations in the adaptive ridge algorithm, see details.
 #' @param epsilon numerical constant used in the adaptive ridge algorithm. Should be small compared to \code{gamma} and large compared to machine precision.
 #' @param thresh relative tolerance for the convergence of the adaptive ridge iterations.
+#' @seealso agraph
 #' @export
 graph_aridge <- function(gamma, sigma_sq, adj,
-                                pen = 10 ^ seq(-4, 4, length = 100),
-                                maxiter = 10000,
-                                epsilon = 1e-5,
-                                thresh = 1e-8) {
+                         pen = 10 ^ seq(-4, 4, length = 100),
+                         maxiter = 10000,
+                         epsilon = 1e-5,
+                         thresh = 1e-8) {
+  .Deprecated("agraph")
   par_ls <- vector("list", length(pen))
   bic <- bic_1 <- bic_2 <- laplace_bic <- pen * 0
   X <- "colnames<-"(diag(length(gamma)), colnames(adj))
@@ -169,98 +171,11 @@ graph_aridge <- function(gamma, sigma_sq, adj,
 #' @param mat the matrix
 #' @param vect the vector
 #' @return \code{mat}\eqn{^{-1}} \code{vec}
-#' @export
 solve_spd <- function(mat, vect) {
   R <- chol(mat)
   temp <- backsolve(R, vect, transpose = TRUE)
   result <- backsolve(R, temp, transpose = FALSE)
   result
-}
-#' Build junction tree of a graph
-#'
-#'
-#' @param g graph
-#' @param verbose whether to print progress while running. Defaults to \code{FALSE}.
-#'
-#' @importFrom igraph vcount neighborhood graph.neighborhood graph V "V<-"
-#' @export
-build_jt <- function(g, verbose = FALSE) {
-  # clique and separator sets
-  N <- 0
-  order <- NULL
-  C <- gC <- S <- list()
-  active <- rep(TRUE, vcount(g))
-  # main loop
-  while (sum(active) > 0) {
-    # compute neighborhood
-    vois <- neighborhood(g, order = 1)
-    gvois <- graph.neighborhood(g, order = 1)
-    # fillin
-    fillin <- unlist(lapply(gvois, countfillin))
-    # elim min fillin (among active vertices)
-    elim <- which(active)[sort(fillin[active], index.return = TRUE)$ix[1]]
-    # compute remove set from elim
-    remove <- NULL
-    for (v in vois[[elim]]) {
-      # if vois[[v]] subset vois[[elim]]
-      if (sum(is.element(vois[[v]], vois[[elim]])) == length(vois[[v]]))
-        remove <- c(remove, v)
-    }
-    # add fillin
-    for (v in vois[[elim]]) g[v, setdiff(vois[[elim]], v)] <- TRUE
-    # disconnect and inactive remove set
-    order <- c(order, remove)
-    g[remove, ] <- FALSE
-    active[remove] <- FALSE
-    # update clique and separator set
-    N <- N + 1
-    C[[N]] <- vois[[elim]]
-    gC[[N]] <- gvois[[elim]]
-    S[[N]] <- setdiff(C[[N]], remove)
-    if (verbose)
-      print(paste0(N, " cliques, ", sum(active), " nodes left"))
-  }
-  # connect separators to cliques
-  connect <- list()
-  edges <- NULL
-  for (i in 1:(N - 1)) {
-    for (j in (i + 1):N) {
-      if (sum(is.element(S[[i]], C[[j]])) == length(S[[i]])) {
-        connect[[i]] <- j
-        edges <- c(edges, c(i, j))
-        break
-      }
-    }
-    connect[[N]] <- numeric(0)
-  }
-  # build the JT
-  jt <- graph(edges, directed = FALSE)
-  if (!is.null(V(g)$name)) {
-    V(jt)$name <- paste0("C",
-                                 1:length(C),
-                                 "={",
-                                 sapply(C, function(z) paste0(V(g)$name[as.numeric(z)], collapse = ",")),
-                                 "}")
-  } else {
-    V(jt)$name <- paste0("C",
-                                 1:length(C),
-                                 "={",
-                                 sapply(C, function(z) paste0(as.numeric(z), collapse = ",")),
-                                 "}")
-  }
-  list(C = C, S = S, elim.order = order,
-       connect = connect, graph = jt, N = N,
-       treewidth = max(unlist(lapply(C, length))))
-}
-#' Utility function for \code{buid_jt}
-#'
-#' @importFrom igraph vcount ecount
-#'
-#' @param g graph
-countfillin <- function(g) {
-  n <- vcount(g)
-  m <- ecount(g)
-  return(n * (n - 1)/2 - m)
 }
 #' Segmentation using graph structure
 #' @param gamma entry vector to regularize
@@ -270,8 +185,8 @@ countfillin <- function(g) {
 #' @param delta Computational constant in the adaptive ridge reweighting formula.
 #' @param tol Tolerance to test for convergence of the adaptive ridge
 agraph_one_lambda <- function(gamma, graph, lambda = 1e0, weights = NULL,
-                   delta = 1e-6, tol = 1e-10,
-                   thresh = 0.01) {
+                              delta = 1e-10, tol = 1e-10,
+                              thresh = 0.01) {
   gamma <- as.vector(gamma)
   lambda <- as.vector(lambda)
   p <- length(gamma)
@@ -304,16 +219,18 @@ agraph_one_lambda <- function(gamma, graph, lambda = 1e0, weights = NULL,
 }
 #' Segmentation using graph structure
 #' @param gamma entry vector to regularize
-#' @param graph \url{igraph} giving the regularization structure
+#' @param graph graph (an \url{igraph} object) giving the regularization structure
 #' @param lambda regularizing constant
 #' @param weights weights for gamma. Default value is one.
 #' @param delta Computational constant in the adaptive ridge reweighting formula.
 #' @param tol Tolerance to test for convergence of the adaptive ridge
+#' @param thresh Thresholding constant used to fuse two adjacent regions with close value of \code{gamma}.
+#' @param itermax Total number of iterations. Default value is 10000. Setting a low value can make the procedure return NULL entries for some values of \code{lambda}.
 #' @export
-agraph <- function(gamma, graph, lambda = 10 ^ seq(-2, 2, length.out = 100),
-                   weights = NULL,
-                   delta = 1e-6, tol = 1e-10,
-                   thresh = 0.01, itermax = 5000) {
+agraph <- function(gamma, graph, lambda = 10 ^ seq(-10, 2, length.out = 100),
+                   weights = NULL, shrinkage = TRUE,
+                   delta = 1e-10, tol = 1e-8,
+                   thresh = 0.01, itermax = 50000) {
   gamma <- as.vector(gamma)
   lambda <- as.vector(lambda)
   p <- length(gamma)
@@ -321,7 +238,9 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-2, 2, length.out = 100),
     weights <- rep(1, p)
   }
   bic <- rep(0, length(lambda))
-  result <- matrix(NA, p, length(lambda))
+  prec <- Diagonal(x = weights)
+  nll <- model_dim <- gcv <- aic <- rep(0, length(lambda))
+  result <- matrix(NA, length(lambda), p)
   ind <- 1
   iter <- 1
   if (!(class(graph) %in% "igraph")) {
@@ -329,29 +248,164 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-2, 2, length.out = 100),
   }
   edgelist_tmp <- as_edgelist(graph, names = FALSE)
   edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
-  adjacency <- as(as_adjacency_matrix(graph), "symmetricMatrix")
+  adj <- as(as_adjacency_matrix(graph), "symmetricMatrix")
   sel <- adj
   converge <- FALSE
-  weighted_laplacian_init <- lambda[1] * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
+  weighted_laplacian_init <- lambda[ind] * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
   chol_init <- Cholesky(weighted_laplacian_init)
   while (iter < itermax) {
     sel_old <- sel
     weighted_laplacian <- lambda[ind] * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
     chol <- update(chol_init, weighted_laplacian)
     theta <- solve(chol, weights * gamma)
-    adjacency@x <- 1 / ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
+    adj@x <- 1 / ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
     sel@x <- (theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 /
       ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
     converge <- all(abs(sel@x - sel_old@x) < tol)
     if (converge) {
       graph_del <- graph %>% delete_edges(which((sel@x > 1 - thresh)[order(edgelist[, 2])]))
       segmentation <- components(graph_del)$membership
-      result[, ind] <- ave(as.vector(gamma), segmentation)
-      bic[ind] <- sum(weights * (result[, ind] - gamma) ^ 2) + log(p) * max(segmentation)
+      if (shrinkage) {
+        result[ind, ] <- ave(as.vector(theta), segmentation)
+      } else {
+        result[ind, ] <- ave(as.vector(gamma), segmentation)
+      }
+      nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% prec %*% (result[ind, ] - gamma)
+      model_dim[ind] <- sum(diag(solve(weighted_laplacian, prec)))
+      bic[ind] <- 2 * nll[ind] + log(p) * model_dim[ind]
+      aic[ind] <- 2 * nll[ind] + 2 * model_dim[ind]
+      gcv[ind] <- 2 * nll[ind] / (p * (1 - model_dim[ind] / p) ^ 2)
+      ind <- ind + 1
+    }
+    iter <- iter + 1
+    if (ind > length(lambda)) break
+    # if (model_dim == 1) break
+  }
+  return(list(result = result, bic = bic, gcv = gcv, model_dim = model_dim,
+              nll = nll, aic = aic))
+}
+#' @export
+rgraph <- function(gamma, graph,
+                   lambda = 10 ^ seq(-10, 2, length.out = 100),
+                   weights = NULL) {
+  gamma <- as.vector(gamma)
+  lambda <- as.vector(lambda)
+  p <- length(gamma)
+  if (is.null(weights)) {
+    weights <- rep(1, p)
+  }
+  bic <- rep(0, length(lambda))
+  prec <- Diagonal(x = weights)
+  nll <- model_dim <- gcv <- aic <- rep(0, length(lambda))
+  result <- matrix(NA, length(lambda), p)
+  ind <- 1
+  iter <- 1
+  if (!(class(graph) %in% "igraph")) {
+    stop("Graph must be in igraph format")
+  }
+  edgelist_tmp <- as_edgelist(graph, names = FALSE)
+  edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
+  adj <- as(as_adjacency_matrix(graph), "symmetricMatrix")
+  weighted_laplacian_init <- lambda[ind] * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
+  chol_init <- Cholesky(weighted_laplacian_init)
+  for (ind in seq_along(lambda)) {
+    weighted_laplacian <- lambda[ind] * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
+    chol <- update(chol_init, weighted_laplacian)
+    result[ind, ] <- as.vector(solve(chol, weights * gamma))
+    nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% prec %*% (result[ind, ] - gamma)
+    model_dim[ind] <- sum(diag(solve(weighted_laplacian, prec)))
+    bic[ind] <- 2 * nll[ind] + log(p) * model_dim[ind]
+    aic[ind] <- 2 * nll[ind] + 2 * model_dim[ind]
+    gcv[ind] <- 2 * nll[ind] / (p * (1 - model_dim[ind] / p) ^ 2)
+  }
+  return(list(result = result, bic = bic, gcv = gcv, model_dim = model_dim,
+              nll = nll, aic = aic))
+}
+#' @export
+agraph_prec <- function(gamma, graph, prec,
+                        lambda = 10 ^ seq(-10, 2, length.out = 40),
+                        weights = NULL, shrinkage = TRUE,
+                        delta = 1e-10, tol = 1e-8,
+                        thresh = 0.01, itermax = 10000) {
+  gamma <- as.vector(gamma)
+  lambda <- as.vector(lambda)
+  if (!isSymmetric(prec)) {
+    prec <- forceSymmetric(prec)
+  }
+  prec <- prec %>% as("dsCMatrix")
+  p <- length(gamma)
+  prec_gamma <- prec %*% gamma
+  nll <- model_dim <- rep(0, length(lambda))
+  result <- matrix(NA, length(lambda), p)
+  ind <- 1
+  iter <- 1
+  if (!(class(graph) %in% "igraph")) {
+    stop("Graph must be in igraph format")
+  }
+  edgelist_tmp <- as_edgelist(graph, names = FALSE)
+  edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
+  adj <- as(as_adjacency_matrix(graph), "symmetricMatrix")
+  sel <- adj
+  converge <- FALSE
+  weighted_laplacian_init <- lambda[ind] * (Diagonal(x = colSums(adj)) - adj) + prec
+  chol_init <- Cholesky(weighted_laplacian_init)
+  while (iter < itermax) {
+    sel_old <- sel
+    weighted_laplacian <- lambda[ind] * (Diagonal(x = colSums(adj)) - adj) + prec
+    chol <- update(chol_init, weighted_laplacian)
+    theta <- solve(chol, prec_gamma)
+    adj@x <- 1 / ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
+    sel@x <- (theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 /
+      ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
+    converge <- all(abs(sel@x - sel_old@x) < tol)
+    if (converge) {
+      graph_del <- graph %>% delete_edges(which((sel@x > 1 - thresh)[order(edgelist[, 2])]))
+      segmentation <- components(graph_del)$membership
+      if (shrinkage) {
+        result[ind, ] <- ave(as.vector(theta), segmentation)
+      } else {
+        result[ind, ] <- ave(as.vector(gamma), segmentation)
+      }
+      nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% prec %*% (result[ind, ] - gamma)
+      model_dim[ind] <- sum(diag(solve(weighted_laplacian, prec)))
+      bic[ind] <- 2 * nll[ind] + log(p) * model_dim[ind]
+      aic[ind] <- 2 * nll[ind] + 2 * model_dim[ind]
+      gcv[ind] <- 2 * nll[ind] / ((p - model_dim[ind]) ^ 2)
       ind <- ind + 1
     }
     iter <- iter + 1
     if (ind > length(lambda)) break
   }
-  return(list(result = result, bic = bic))
+  bic <- 2 * nll + log(p) * model_dim
+  aic <- 2 * nll + 2 * model_dim
+  gcv <- 2 * nll / ((p - model_dim) ^ 2)
+  return(list(result = result, aic = aic, bic = bic,
+              gcv = gcv, model_dim = model_dim, nll = nll))
 }
+graph2connlist <- function(graph) {
+  connlist <- igraph::as_adj_list(graph) %>%
+    lapply(as.character) %>%
+    lapply(as.numeric) %>%
+    lapply(function(a) a - 1) %>%
+    lapply(function(a) {
+      attributes(a) <- NULL
+      return(a)
+    }) %>%
+    lapply(as.integer) %>%
+    'class<-'("connListObj")
+  return(connlist)
+}
+#' @export
+flsa_graph <- function(gamma, graph, lambda) {
+  flsa_fit <- flsa::flsa(gamma, connListObj = graph2connlist(graph),
+                         lambda2 = lambda)
+  model_dim <- apply(flsa_fit, 1, function(a) length(unique(a))) %>% unname
+  nll <- 1 / 2 * apply(flsa_fit - t(replicate(length(lambda), gamma)),
+                       1,
+                       function(a) sum(a ^ 2))
+  list("result" = flsa_fit, "aic" = 2 * nll + 2 * model_dim,
+       "bic" = 2 * nll + log(length(gamma)) * model_dim,
+       "gcv" = 2 * nll / ((length(gamma) - model_dim) ^ 2),
+       "model_dim" = model_dim, "nll" = nll)
+}
+
