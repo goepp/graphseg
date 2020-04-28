@@ -1,0 +1,83 @@
+---
+title: "Graphseg for segmentation of spatial data"
+author: "Vivien Goepp"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+%\VignetteIndexEntry{Vignette Title}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+  ---
+  
+  ```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+collapse = TRUE,
+comment = "#>"
+)
+```
+```{r}
+library(sf) # manipulate geometrical data
+library(magrittr) # use pipe operator
+library(dplyr) # for dataframe manipulation
+library(Matrix) # use sparse matrices
+library(igraph) # manipulate graphs
+library(graphseg)
+```
+
+# Loading the data
+
+```{r}
+data("utrecht_district")
+data("graph_utrecht_district")
+
+plot(utrecht_district["geometry"])
+```
+
+# Generate noisy data
+Define a piece-wise constant signal on the adjacency graph, and define a noisy signal thereof:
+```{r}
+baseline <- data.frame("municip_code" = levels(utrecht_district$municip_code),
+                       "pc_signal" = rnorm(nlevels(utrecht_district$municip_code), 0, 10))
+utrecht_district <- utrecht_district %>% 
+  left_join(baseline, by = "municip_code") # define piece-wise constant signal
+sigma_sq <- 1
+utrecht_district$noisy_signal <- utrecht_district$pc_signal + 
+  rnorm(nrow(utrecht_district), 0, sigma_sq) # define noisy signal
+plot(utrecht_district["noisy_signal"])
+```
+
+# Fused regularized signal approximation
+Run `agraph`:
+```{r}
+lambda <- 10 ^ seq(-3, 3, length = 50) # define a sequence of penalties
+res <- agraph(utrecht_district$noisy_signal, graph_utrecht_district, lambda)
+```
+Plot regularization path:
+```{r}
+matplot(log10(lambda), res$result, type = "l")
+abline(v = log10(lambda)[sapply(res[c("aic", "bic", "gcv")], which.min)],
+       col = "red")
+```
+Plot the estimated piecewise constant signal:
+```{r}
+utrecht_district$seg_aic <- res$result[which.min(res$aic), ]
+utrecht_district$seg_bic <- res$result[which.min(res$bic), ]
+plot(utrecht_district["seg_aic"])
+plot(utrecht_district["seg_bic"])
+
+utrecht_district_fused <- utrecht_district %>% 
+  dplyr::mutate(group = cut(seg_bic, breaks = sort(unique(seg_bic)),
+                            include.lowest = TRUE)) %>%
+  dplyr::group_by(group) %>%
+  dplyr::summarize(seg_bic = mean(seg_bic), do_union = TRUE)
+
+plot(utrecht_district_fused["seg_bic"])
+```
+
+Display the fused estimation as a one-dimensional signal:
+```{r}
+plot(utrecht_district$baseline)
+points(res$result[which.min(res$bic), ], pch = 3, col = "red")
+```
+
+

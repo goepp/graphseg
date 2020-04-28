@@ -227,7 +227,7 @@ agraph_one_lambda <- function(gamma, graph, lambda = 1e0, weights = NULL,
 #' @param thresh Thresholding constant used to fuse two adjacent regions with close value of \code{gamma}.
 #' @param itermax Total number of iterations. Default value is 10000. Setting a low value can make the procedure return NULL entries for some values of \code{lambda}.
 #' @export
-agraph <- function(gamma, graph, lambda = 10 ^ seq(-10, 2, length.out = 100),
+agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
                    weights = NULL, shrinkage = TRUE,
                    delta = 1e-10, tol = 1e-8,
                    thresh = 0.01, itermax = 50000) {
@@ -237,14 +237,13 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-10, 2, length.out = 100),
   if (is.null(weights)) {
     weights <- rep(1, p)
   }
-  bic <- rep(0, length(lambda))
   prec <- Diagonal(x = weights)
-  nll <- model_dim <- gcv <- aic <- rep(0, length(lambda))
+  nll <- model_dim <- rep(0, length(lambda))
   result <- matrix(NA, length(lambda), p)
   ind <- 1
   iter <- 1
   if (!(class(graph) %in% "igraph")) {
-    stop("Graph must be in igraph format")
+    stop("Graph must be an igraph object")
   }
   edgelist_tmp <- as_edgelist(graph, names = FALSE)
   edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
@@ -272,21 +271,20 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-10, 2, length.out = 100),
       }
       nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% prec %*% (result[ind, ] - gamma)
       model_dim[ind] <- sum(diag(solve(weighted_laplacian, prec)))
-      bic[ind] <- 2 * nll[ind] + log(p) * model_dim[ind]
-      aic[ind] <- 2 * nll[ind] + 2 * model_dim[ind]
-      gcv[ind] <- 2 * nll[ind] / (p * (1 - model_dim[ind] / p) ^ 2)
       ind <- ind + 1
     }
     iter <- iter + 1
     if (ind > length(lambda)) break
     # if (model_dim == 1) break
   }
+  bic <- 2 * nll + log(p) * model_dim
+  aic <- 2 * nll + 2 * model_dim
+  gcv <- 2 * nll / (p * (1 - model_dim / p) ^ 2)
   return(list(result = result, bic = bic, gcv = gcv, model_dim = model_dim,
               nll = nll, aic = aic))
 }
-#' @export
 rgraph <- function(gamma, graph,
-                   lambda = 10 ^ seq(-10, 2, length.out = 100),
+                   lambda = 10 ^ seq(-4, 4, length.out = 50),
                    weights = NULL) {
   gamma <- as.vector(gamma)
   lambda <- as.vector(lambda)
@@ -294,12 +292,10 @@ rgraph <- function(gamma, graph,
   if (is.null(weights)) {
     weights <- rep(1, p)
   }
-  bic <- rep(0, length(lambda))
   prec <- Diagonal(x = weights)
-  nll <- model_dim <- gcv <- aic <- rep(0, length(lambda))
+  nll <- model_dim <- rep(0, length(lambda))
   result <- matrix(NA, length(lambda), p)
   ind <- 1
-  iter <- 1
   if (!(class(graph) %in% "igraph")) {
     stop("Graph must be in igraph format")
   }
@@ -314,16 +310,16 @@ rgraph <- function(gamma, graph,
     result[ind, ] <- as.vector(solve(chol, weights * gamma))
     nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% prec %*% (result[ind, ] - gamma)
     model_dim[ind] <- sum(diag(solve(weighted_laplacian, prec)))
-    bic[ind] <- 2 * nll[ind] + log(p) * model_dim[ind]
-    aic[ind] <- 2 * nll[ind] + 2 * model_dim[ind]
-    gcv[ind] <- 2 * nll[ind] / (p * (1 - model_dim[ind] / p) ^ 2)
   }
+  bic <- 2 * nll + log(p) * model_dim
+  aic <- 2 * nll + 2 * model_dim
+  gcv <- 2 * nll / (p * (1 - model_dim / p) ^ 2)
   return(list(result = result, bic = bic, gcv = gcv, model_dim = model_dim,
               nll = nll, aic = aic))
 }
 #' @export
 agraph_prec <- function(gamma, graph, prec,
-                        lambda = 10 ^ seq(-10, 2, length.out = 40),
+                        lambda = 10 ^ seq(-4, 4, length.out = 50),
                         weights = NULL, shrinkage = TRUE,
                         delta = 1e-10, tol = 1e-8,
                         thresh = 0.01, itermax = 10000) {
@@ -368,9 +364,6 @@ agraph_prec <- function(gamma, graph, prec,
       }
       nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% prec %*% (result[ind, ] - gamma)
       model_dim[ind] <- sum(diag(solve(weighted_laplacian, prec)))
-      bic[ind] <- 2 * nll[ind] + log(p) * model_dim[ind]
-      aic[ind] <- 2 * nll[ind] + 2 * model_dim[ind]
-      gcv[ind] <- 2 * nll[ind] / ((p - model_dim[ind]) ^ 2)
       ind <- ind + 1
     }
     iter <- iter + 1
