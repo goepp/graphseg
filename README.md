@@ -16,7 +16,6 @@ Each administrative region is a vertex of the graph and the edges are given by t
 
 
 ## How to install the package
-## Installation
 You can install the `graphseg`package directly from GitHub, which is the recommended option. Alternatively, you can also install this package by hand. Details are given hereafter.
 
 ### Recommended installation

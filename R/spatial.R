@@ -250,11 +250,13 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
   adj <- as(as_adjacency_matrix(graph), "symmetricMatrix")
   sel <- adj
   converge <- FALSE
-  weighted_laplacian_init <- lambda[ind] * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
+  weighted_laplacian_init <- lambda[ind] * (Diagonal(x = Matrix::colSums(adj)) - adj) +
+    Diagonal(x = weights)
   chol_init <- Cholesky(weighted_laplacian_init)
   while (iter < itermax) {
     sel_old <- sel
-    weighted_laplacian <- lambda[ind] * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
+    weighted_laplacian <- lambda[ind] * (Diagonal(x = Matrix::colSums(adj)) - adj) +
+      Diagonal(x = weights)
     chol <- update(chol_init, weighted_laplacian)
     theta <- solve(chol, weights * gamma)
     adj@x <- 1 / ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
