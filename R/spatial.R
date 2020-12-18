@@ -12,16 +12,11 @@
 #' @rdname loglik
 #' @title this is a title
 #' @export
-#' @importFrom stringr str_detect
-#' @importFrom mgcv bam
 #' @importFrom stats setNames
-#' @importFrom car wcrossprod
-#' @importFrom Matrix rowSums
 #' @import graphics
 #' @import sf
-#' @importFrom igraph decompose graph_from_adjacency_matrix clusters V E spectrum
-#' @import magrittr
-#' @import methods
+#' @importFrom igraph decompose graph_from_adjacency_matrix clusters
+#' @importFrom magrittr %>%
 loglik <- function(par, gamma, sigma_sq, K, pen) {
   if (length(pen) != 1 | !is.numeric(pen)) {
     stop("Error: pen must be a numeric vector of length 1")
@@ -79,6 +74,8 @@ score <- function(par, gamma, sigma_sq, K, pen) {
 #' @param sigma_sq variance of \code{gamma} (functions as weights for \code{gamma})
 #' @param K weighted laplacian matrix of the graph
 #' @param pen penalty constant (must be a positive number). Higher values of \code{pen} yields a more regularized fit
+#' @param ginv Boolean, defaults FALSE. Whether to use the generalized inverse solver \code{ginv} from
+#' package \code{limSolve}
 #' @seealso \code{\link{loglik}}, \code{\link{score}}, \code{\link{hessian}}
 #'
 #' @importFrom limSolve Solve
@@ -120,7 +117,7 @@ solver_nr <- function(gamma, sigma_sq, K,
 #' @param pen penalty value parameter
 #' @param maxiter maximal number of iterations in the adaptive ridge algorithm, see details.
 #' @param epsilon numerical constant used in the adaptive ridge algorithm. Should be small compared to \code{gamma} and large compared to machine precision.
-#' @param thresh relative tolerance for the convergence of the adaptive ridge iterations.
+#' @param thresh relative tolerance for testing the convergence of the adaptive ridge iterations.
 #' @seealso agraph
 #' @export
 graph_aridge <- function(gamma, sigma_sq, adj,
@@ -194,9 +191,9 @@ agraph_one_lambda <- function(gamma, graph, lambda = 1, weights = NULL,
   if (!(class(graph) %in% "igraph")) {
     stop("Graph must be in igraph format")
   }
-  edgelist_tmp <- as_edgelist(graph, names = FALSE)
+  edgelist_tmp <- igraph::as_edgelist(graph, names = FALSE)
   edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
-  adjacency <- as(as_adjacency_matrix(graph), "symmetricMatrix")
+  adjacency <- Matrix::as(igraph::as_adjacency_matrix(graph), "symmetricMatrix")
   sel <- sel_old <- adj
   converge <- FALSE
   weighted_laplacian_init <- lambda * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
@@ -211,8 +208,8 @@ agraph_one_lambda <- function(gamma, graph, lambda = 1, weights = NULL,
     converge <- all(abs(sel@x - sel_old@x) < tol)
     sel_old <- sel
   }
-  graph_del <- delete_edges(graph, which((sel@x > 1 - thresh)[order(edgelist[, 2])]))
-  theta <- stats::ave(as.vector(gamma), components(graph_del)$membership)
+  graph_del <- igraph::delete_edges(graph, which((sel@x > 1 - thresh)[order(edgelist[, 2])]))
+  theta <- stats::ave(as.vector(gamma), igraph::components(graph_del)$membership)
   return(theta)
 }
 #' Segmentation using graph structure
@@ -225,13 +222,12 @@ agraph_one_lambda <- function(gamma, graph, lambda = 1, weights = NULL,
 #' @param tol Tolerance to test for convergence of the adaptive ridge
 #' @param thresh Thresholding constant used to fuse two adjacent regions with close value of \code{gamma}.
 #' @param itermax Total number of iterations. Default value is 10000. Setting a low value can make the procedure return NULL entries for some values of \code{lambda}.
+#' @importFrom Matrix Cholesky solve update Diagonal
 #' @export
 agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
                    weights = NULL, shrinkage = TRUE,
                    delta = 1e-10, tol = 1e-8,
                    thresh = 0.01, itermax = 50000) {
-  # gamma <- as.vector(gamma)
-  # lambda <- as.vector(lambda)
   p <- length(gamma)
   if (is.null(weights)) {
     weights <- rep(1, p)
@@ -244,7 +240,7 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
   if (!(class(graph) %in% "igraph")) {
     stop("Graph must be an igraph object.")
   }
-  if (length(gamma) != length(V(graph))) {
+  if (length(gamma) != igraph::vcount(graph)) {
     stop("gamma must be a vector of length the number of vertices in the graph.")
   }
   edgelist_tmp <- igraph::as_edgelist(graph, names = FALSE)
@@ -266,8 +262,8 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
       ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
     converge <- all(abs(sel@x - sel_old@x) < tol)
     if (converge) {
-      graph_del <- delete_edges(graph, which((sel@x > 1 - thresh)[order(edgelist[, 2])]))
-      segmentation <- components(graph_del)$membership
+      graph_del <- igraph::delete_edges(graph, which((sel@x > 1 - thresh)[order(edgelist[, 2])]))
+      segmentation <- igraph::components(graph_del)$membership
       if (shrinkage) {
         result[ind, ] <- stats::ave(as.vector(theta), segmentation)
       } else {
@@ -303,8 +299,7 @@ rgraph <- function(gamma, graph,
   if (!(class(graph) %in% "igraph")) {
     stop("Graph must be in igraph format")
   }
-  edgelist_tmp <- as_edgelist(graph, names = FALSE)
-  adj <- as(as_adjacency_matrix(graph), "symmetricMatrix")
+  adj <- Matrix::as(igraph::as_adjacency_matrix(graph), "symmetricMatrix")
   weighted_laplacian_init <- lambda[ind] * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
   chol_init <- Cholesky(weighted_laplacian_init)
   for (ind in seq_along(lambda)) {
@@ -328,11 +323,11 @@ agraph_prec <- function(gamma, graph, prec,
   gamma <- as.vector(gamma)
   lambda <- as.vector(lambda)
   if (!isSymmetric(prec)) {
-    prec <- Matrix::forceSymmetric(prec)
+    precision <- Matrix::forceSymmetric(prec)
   }
-  prec <- prec %>% as("dsCMatrix")
+  precision <- precision %>% as("dsCMatrix")
   p <- length(gamma)
-  prec_gamma <- prec %*% gamma
+  prec_gamma <- precision %*% gamma
   nll <- model_dim <- rep(0, length(lambda))
   result <- matrix(NA, length(lambda), p)
   ind <- 1
@@ -342,7 +337,7 @@ agraph_prec <- function(gamma, graph, prec,
   }
   edgelist_tmp <- igraph::as_edgelist(graph, names = FALSE)
   edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
-  adj <- as(igraph::as_adjacency_matrix(graph), "symmetricMatrix")
+  adj <- Matrix::as(igraph::as_adjacency_matrix(graph), "symmetricMatrix")
   sel <- adj
   converge <- FALSE
   weighted_laplacian_init <- lambda[ind] * (Matrix::Diagonal(x = colSums(adj)) - adj) + prec
@@ -357,15 +352,15 @@ agraph_prec <- function(gamma, graph, prec,
       ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
     converge <- all(abs(sel@x - sel_old@x) < tol)
     if (converge) {
-      graph_del <- graph %>% delete_edges(which((sel@x > 1 - thresh)[order(edgelist[, 2])]))
-      segmentation <- components(graph_del)$membership
+      graph_del <- igraph::delete_edges(graph, which((sel@x > 1 - thresh)[order(edgelist[, 2])]))
+      segmentation <- igraph::components(graph_del)$membership
       if (shrinkage) {
-        result[ind, ] <- ave(as.vector(theta), segmentation)
+        result[ind, ] <- stats::ave(as.vector(theta), segmentation)
       } else {
-        result[ind, ] <- ave(as.vector(gamma), segmentation)
+        result[ind, ] <- stats::ave(as.vector(gamma), segmentation)
       }
-      nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% prec %*% (result[ind, ] - gamma)
-      model_dim[ind] <- sum(diag(solve(weighted_laplacian, prec)))
+      nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% precision %*% (result[ind, ] - gamma)
+      model_dim[ind] <- sum(diag(Matrix::solve(weighted_laplacian, prec)))
       ind <- ind + 1
     }
     iter <- iter + 1
@@ -377,6 +372,7 @@ agraph_prec <- function(gamma, graph, prec,
   return(list(result = result, aic = aic, bic = bic,
               gcv = gcv, model_dim = model_dim, nll = nll))
 }
+#' @importFrom magrittr %>%
 graph2connlist <- function(graph) {
   connlist <- igraph::as_adj_list(graph) %>%
     lapply(as.character) %>%

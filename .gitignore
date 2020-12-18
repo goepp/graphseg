@@ -1,5 +1,10 @@
+inst/doc
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
 use_laplacian.R
+crossprod.R
+chol_solve.R
+R/spatial_old.R
+R/spatial_deprec.R
