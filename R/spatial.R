@@ -324,6 +324,7 @@ agraph_prec <- function(gamma, graph, prec,
   lambda <- as.vector(lambda)
   if (!isSymmetric(prec)) {
     precision <- Matrix::forceSymmetric(prec)
+    warning("Precision matrix was not symmetric. It was coerced to symmetric.")
   }
   precision <- precision %>% as("dsCMatrix")
   p <- length(gamma)
