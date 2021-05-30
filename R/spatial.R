@@ -59,7 +59,6 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
   if (is.null(weights)) {
     weights <- rep(1, p)
   }
-  precision <- Matrix::Diagonal(x = weights)
   nll <- model_dim <- rep(0, length(lambda))
   result <- matrix(NA, length(lambda), p)
   ind <- 1
@@ -194,7 +193,7 @@ agraph_prec <- function(gamma, graph, prec,
       } else {
         result[ind, ] <- stats::ave(as.vector(gamma), segmentation)
       }
-      nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% precision %*% (result[ind, ] - gamma)
+      nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% prec %*% (result[ind, ] - gamma)
       model_dim[ind] <- sum(diag(Matrix::solve(weighted_laplacian, prec)))
       ind <- ind + 1
     }
