@@ -8,3 +8,5 @@ chol_solve.R
 ^R\spatial_deprec.R$
 ^R\simu.R$
 ^sandbox*$
+^README\.Rmd$
+^LICENSE$
