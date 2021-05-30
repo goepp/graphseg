@@ -95,7 +95,7 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
         result[ind, ] <- stats::ave(as.vector(gamma), segmentation)
       }
       nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% prec %*% (result[ind, ] - gamma)
-      model_dim[ind] <- sum(diag(Matrix::solve(weighted_laplacian, precision)))
+      model_dim[ind] <- sum(diag(Matrix::solve(weighted_laplacian, prec)))
       ind <- ind + 1
     }
     iter <- iter + 1
@@ -150,7 +150,7 @@ agraph_prec <- function(gamma, graph, prec,
                         thresh = 0.01, itermax = 10000) {
   gamma <- as.vector(gamma)
   lambda <- as.vector(lambda)
-  if (!"sparseMatrix" %in% is(prec)) {
+  if (!"sparseMatrix" %in% methods::is(prec)) {
     prec <- Matrix::Matrix(prec, sparse = TRUE)
     warning("Precision matrix was not sparse. It was coerced to sparse format.")
   }
@@ -158,7 +158,6 @@ agraph_prec <- function(gamma, graph, prec,
     prec <- Matrix::forceSymmetric(prec)
     warning("Precision matrix was not symmetric. It was coerced to symmetric.")
   }
-  prec <- prec %>% as("dsCMatrix")
   p <- length(gamma)
   prec_gamma <- prec %*% gamma
   nll <- model_dim <- rep(0, length(lambda))
