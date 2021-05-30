@@ -20,7 +20,7 @@ agraph_one_lambda <- function(gamma, graph, lambda = 1, weights = NULL,
   }
   edgelist_tmp <- igraph::as_edgelist(graph, names = FALSE)
   edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
-  adjacency <- Matrix::forceSymmetric(igraph::as_adjacency_matrix(graph))
+  adj <- Matrix::forceSymmetric(igraph::as_adjacency_matrix(graph))
   sel <- sel_old <- adj
   converge <- FALSE
   weighted_laplacian_init <- lambda * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
@@ -152,13 +152,17 @@ agraph_prec <- function(gamma, graph, prec,
                         thresh = 0.01, itermax = 10000) {
   gamma <- as.vector(gamma)
   lambda <- as.vector(lambda)
+  if (!"sparseMatrix" %in% is(prec)) {
+    prec <- Matrix::Matrix(prec, sparse = TRUE)
+    warning("Precision matrix was not sparse. It was coerced to sparse format.")
+  }
   if (!isSymmetric(prec)) {
-    precision <- Matrix::forceSymmetric(prec)
+    prec <- Matrix::forceSymmetric(prec)
     warning("Precision matrix was not symmetric. It was coerced to symmetric.")
   }
-  precision <- precision %>% as("dsCMatrix")
+  prec <- prec %>% as("dsCMatrix")
   p <- length(gamma)
-  prec_gamma <- precision %*% gamma
+  prec_gamma <- prec %*% gamma
   nll <- model_dim <- rep(0, length(lambda))
   result <- matrix(NA, length(lambda), p)
   ind <- 1
