@@ -1,4 +1,4 @@
-#' graphseg: A package for piexe-wise constant estimation of graph-based signal
+#' graphseg: A package for piece-wise constant estimation of graph-based signal
 #'
 #' The main functino of this package is the fuction \code{agraph}
 #' (the function \code{graph_aridge} is deprecated and kept here for backward
