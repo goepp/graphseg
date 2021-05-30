@@ -4,7 +4,9 @@
 \name{departement}
 \alias{departement}
 \title{French departement}
-\format{An \code{\link[sf]{sf}} object, with lattitude and longitude}
+\format{
+An \code{\link[sf]{sf}} object, with lattitude and longitude
+}
 \source{
 The data set comes from \url{github.com/gregoiredavid/france-geojson}, under the "Licence Ouverte / Open Licence v2.0" licence.
 }

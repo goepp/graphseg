@@ -2,6 +2,7 @@
 % Please edit documentation in R/spatial.R
 \name{agraph}
 \alias{agraph}
+\alias{agraph_prec}
 \title{Segmentation using graph structure}
 \usage{
 agraph(
@@ -15,6 +16,19 @@ agraph(
   thresh = 0.01,
   itermax = 50000
 )
+
+agraph_prec(
+  gamma,
+  graph,
+  prec,
+  lambda = 10^seq(-4, 4, length.out = 50),
+  weights = NULL,
+  shrinkage = TRUE,
+  delta = 1e-10,
+  tol = 1e-08,
+  thresh = 0.01,
+  itermax = 10000
+)
 }
 \arguments{
 \item{gamma}{entry vector to regularize}
@@ -25,6 +39,8 @@ agraph(
 
 \item{weights}{weights for gamma. Default value is one.}
 
+\item{shrinkage}{Boolean, defaults TRUE. Whether to return the adaptive ridge estimate as output. If FALSE, the adaptive ridge is used to define a segmentation into zones, and the signal is estimated on each zone using non-penalized estimation.}
+
 \item{delta}{Computational constant in the adaptive ridge reweighting formula.}
 
 \item{tol}{Tolerance to test for convergence of the adaptive ridge}
@@ -32,6 +48,8 @@ agraph(
 \item{thresh}{Thresholding constant used to fuse two adjacent regions with close value of \code{gamma}.}
 
 \item{itermax}{Total number of iterations. Default value is 10000. Setting a low value can make the procedure return NULL entries for some values of \code{lambda}.}
+
+\item{prec}{precision matrix (inverse of the variance-covariance matrix). Has to be a sparse matrix for efficiency.}
 }
 \description{
 Segmentation using graph structure
