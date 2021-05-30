@@ -9,4 +9,3 @@ chol_solve.R
 ^R\simu.R$
 ^sandbox*$
 ^README\.Rmd$
-^LICENSE$
