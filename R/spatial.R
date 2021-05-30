@@ -59,6 +59,7 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
   if (is.null(weights)) {
     weights <- rep(1, p)
   }
+  prec <- Matrix::Diagonal(x = weights)
   nll <- model_dim <- rep(0, length(lambda))
   result <- matrix(NA, length(lambda), p)
   ind <- 1
@@ -74,13 +75,11 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
   adj <- Matrix::forceSymmetric(igraph::as_adjacency_matrix(graph))
   sel <- adj
   converge <- FALSE
-  weighted_laplacian_init <- lambda[ind] * (Matrix::Diagonal(x = Matrix::colSums(adj)) - adj) +
-    Matrix::Diagonal(x = weights)
+  weighted_laplacian_init <- lambda[ind] * (Matrix::Diagonal(x = Matrix::colSums(adj)) - adj) + prec
   chol_init <- Matrix::Cholesky(weighted_laplacian_init)
   while (iter < itermax) {
     sel_old <- sel
-    weighted_laplacian <- lambda[ind] * (Diagonal(x = Matrix::colSums(adj)) - adj) +
-      Matrix::Diagonal(x = weights)
+    weighted_laplacian <- lambda[ind] * (Diagonal(x = Matrix::colSums(adj)) - adj) + prec
     chol <- Matrix::update(chol_init, weighted_laplacian)
     theta <- Matrix::solve(chol, weights * gamma)
     adj@x <- 1 / ((theta[edgelist[, 1]] - theta[edgelist[, 2]]) ^ 2 + delta)
@@ -95,7 +94,7 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
       } else {
         result[ind, ] <- stats::ave(as.vector(gamma), segmentation)
       }
-      nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% precision %*% (result[ind, ] - gamma)
+      nll[ind] <- 1 / 2 * t(result[ind, ] - gamma) %*% prec %*% (result[ind, ] - gamma)
       model_dim[ind] <- sum(diag(Matrix::solve(weighted_laplacian, precision)))
       ind <- ind + 1
     }
