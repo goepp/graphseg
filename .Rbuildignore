@@ -4,7 +4,7 @@ use_laplacian.R
 utrecht_gif.gif
 crossprod.R
 chol_solve.R
-\sandbox
-^\R\spatial_old.R$
-^\R\spatial_deprec.R$
-^\R\simu.R$
+^R\spatial_old.R$
+^R\spatial_deprec.R$
+^R\simu.R$
+^sandbox\$
