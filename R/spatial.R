@@ -109,57 +109,6 @@ solver_nr <- function(gamma, sigma_sq, K,
   if (iter == maxiter) warning("Warning: Newton-Raphson did not converge")
   par
 }
-#' Regularization of spatial data using adjacency graph
-#'
-#' @param gamma vector of estimated values
-#' @param sigma_sq vector of estimated variances
-#' @param adj adjacency matrix of the regions corresponding to each values
-#' @param pen penalty value parameter
-#' @param maxiter maximal number of iterations in the adaptive ridge algorithm, see details.
-#' @param epsilon numerical constant used in the adaptive ridge algorithm. Should be small compared to \code{gamma} and large compared to machine precision.
-#' @param thresh relative tolerance for testing the convergence of the adaptive ridge iterations.
-#' @seealso agraph
-#' @export
-graph_aridge <- function(gamma, sigma_sq, adj,
-                         pen = 10 ^ seq(-4, 4, length = 100),
-                         maxiter = 10000,
-                         epsilon = 1e-5,
-                         thresh = 1e-8) {
-  .Deprecated("agraph")
-  par_ls <- vector("list", length(pen))
-  bic <- laplace_bic <- pen * 0
-  X <- "colnames<-"(diag(length(gamma)), colnames(adj))
-  weight_adj <- adj
-  theta <- gamma * 0
-  iter <- 1
-  ind <- 1
-  sel <- weight_adj
-  while (iter < maxiter) {
-    old_sel <- sel
-    K <- diag(apply(weight_adj, 1, sum)) - weight_adj
-    theta <- solver(gamma, sigma_sq, K, pen = pen[ind], ginv = FALSE)[, 1]
-    weight_adj <- adj /
-      ((replicate(length(theta), theta) - t(replicate(length(theta), theta))) ^ 2 + epsilon ^ 2)
-    sel <- weight_adj * ((replicate(length(theta), theta) - t(replicate(length(theta), theta))) ^ 2)
-    converge <- max(abs(old_sel - sel)) <= thresh
-    converge
-    if (converge) {
-      components <- igraph::graph_from_adjacency_matrix((sel < 0.99) * adj, mode = "undirected")
-      t <- igraph::clusters(components)$membership
-      X_sel <- sel_columns(X, t)
-      fit <- mgcv::gam(gamma ~ X_sel, family = stats::gaussian(), drop.intercept = TRUE)
-      temp <- function(ind) fit$coefficients[t[ind]]
-      par_ls[[ind]] <- setNames(sapply(1:length(t), temp), colnames(X))
-      bic[ind] <- log(length(gamma)) * ncol(X_sel) +
-        2 * loglik(par_ls[[ind]], gamma, sigma_sq, K, pen = 0)
-      laplace_bic[ind] <- bic[ind] - ncol(X_sel) * log(2 * pi) - sum(log(sigma_sq))
-      ind <- ind + 1
-    }
-    iter <- iter + 1
-    if (ind > length(par_ls)) break
-  }
-  list(par = par_ls, bic = bic, laplace_bic = laplace_bic)
-}
 #' Linear solver when the matrix is symmetric positive definite
 #'
 #' @param mat the matrix
@@ -193,7 +142,7 @@ agraph_one_lambda <- function(gamma, graph, lambda = 1, weights = NULL,
   }
   edgelist_tmp <- igraph::as_edgelist(graph, names = FALSE)
   edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
-  adjacency <- Matrix::as(igraph::as_adjacency_matrix(graph), "symmetricMatrix")
+  adjacency <- Matrix::forceSymmetric(igraph::as_adjacency_matrix(graph))
   sel <- sel_old <- adj
   converge <- FALSE
   weighted_laplacian_init <- lambda * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
@@ -245,7 +194,7 @@ agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
   }
   edgelist_tmp <- igraph::as_edgelist(graph, names = FALSE)
   edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
-  adj <- as(igraph::as_adjacency_matrix(graph), "symmetricMatrix")
+  adj <- Matrix::forceSymmetric(igraph::as_adjacency_matrix(graph))
   sel <- adj
   converge <- FALSE
   weighted_laplacian_init <- lambda[ind] * (Matrix::Diagonal(x = Matrix::colSums(adj)) - adj) +
@@ -299,7 +248,7 @@ rgraph <- function(gamma, graph,
   if (!(class(graph) %in% "igraph")) {
     stop("Graph must be in igraph format")
   }
-  adj <- Matrix::as(igraph::as_adjacency_matrix(graph), "symmetricMatrix")
+  adj <- Matrix::forceSymmetric(igraph::as_adjacency_matrix(graph))
   weighted_laplacian_init <- lambda[ind] * (Diagonal(x = colSums(adj)) - adj) + Diagonal(x = weights)
   chol_init <- Cholesky(weighted_laplacian_init)
   for (ind in seq_along(lambda)) {
@@ -315,6 +264,9 @@ rgraph <- function(gamma, graph,
   return(list(result = result, bic = bic, gcv = gcv, model_dim = model_dim,
               nll = nll, aic = aic))
 }
+#' @rdname agraph
+#' @param prec precision matrix (inverse of the variance-covariance matrix). Has to be a sparse matrix for efficiency.
+#' @export
 agraph_prec <- function(gamma, graph, prec,
                         lambda = 10 ^ seq(-4, 4, length.out = 50),
                         weights = NULL, shrinkage = TRUE,
@@ -338,7 +290,7 @@ agraph_prec <- function(gamma, graph, prec,
   }
   edgelist_tmp <- igraph::as_edgelist(graph, names = FALSE)
   edgelist <- edgelist_tmp[order(edgelist_tmp[, 2]), c(2, 1)]
-  adj <- Matrix::as(igraph::as_adjacency_matrix(graph), "symmetricMatrix")
+  adj <- Matrix::forceSymmetric(igraph::as_adjacency_matrix(graph))
   sel <- adj
   converge <- FALSE
   weighted_laplacian_init <- lambda[ind] * (Matrix::Diagonal(x = colSums(adj)) - adj) + prec
@@ -387,6 +339,15 @@ graph2connlist <- function(graph) {
     'class<-'("connListObj")
   return(connlist)
 }
+#' Segmentation using graph structure and the fused lasso estimate
+#' @description Wrapper around the function \url{flsa::flsa}.
+#' @param gamma entry vector to regularize
+#' @param graph graph (an \url{igraph} object) giving the regularization structure
+#' @param lambda regularizing constant
+#' @importFrom Matrix Cholesky solve update Diagonal
+#' @references Hoefling, H., A Path Algorithm for the Fused Lasso Signal Approximator,
+#' Journal of Computational and Graphical Statistics (2010)
+#' #' \url{https://doi.org/10.1198/jcgs.2010.09208}
 #' @export
 flsa_graph <- function(gamma, graph, lambda) {
   flsa_fit <- flsa::flsa(gamma, connListObj = graph2connlist(graph),
