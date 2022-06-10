@@ -5,7 +5,7 @@ Performs estimation of a signal with regularization using the adjacency structur
 This package has a natural application to spatial data: when we want to have a spatial segmentation of a region-dependent signal, you can apply this package to the adjacency graph of the spatial regions.
 
 This package uses a penalty similar to the graph fused lasso [[1]](https://arxiv.org/pdf/0910.0526.pdf), except that the penalty on difference between adjacent vertices is given by the adaptive ridge ([[2]](http://downloads.hindawi.com/journals/cmmm/2016/3456153.pdf),  [[3]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4743917/pdf/pone.0148620.pdf)).
-More information are given in a preprint to be available soon.
+More information in the related paper ([preprint](https://hal.archives-ouvertes.fr/hal-03474990v1)).
 
 ## Illustration of the package:
 Here is a small example of segmentation of obesity prevalence [[4]](https://ij-healthgeographics.biomedcentral.com/track/pdf/10.1186/s12942-017-0097-5) on spatial data from the region of Utrecht, Netherlands.
