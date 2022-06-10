@@ -12,15 +12,10 @@ Encoding: UTF-8
 LazyData: true
 URL: http://github.com/goepp/graphseg
 Imports:
-  graphics,
   igraph, 
-  limSolve,
   magrittr,
   methods,
-  mgcv,
-  stringr,
-  Matrix, 
-  car,
+  Matrix,
   sf,
   flsa
 RoxygenNote: 7.1.1
