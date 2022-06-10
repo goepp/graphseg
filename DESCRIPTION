@@ -1,7 +1,7 @@
 Package: graphseg
 Type: Package
 Title: Regularized estimation for spatially distributed data
-Version: 0.1.0
+Version: 1.0.0
 Author: Vivien Goepp
 # Authors@R: person("Vivien", "Goepp", email = "vivien.goepp@gmail.com", role = c("aut", "cre"))
 Maintainer: Vivien Goepp <vivien.goepp@gmail.com>
