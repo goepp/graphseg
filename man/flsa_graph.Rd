@@ -9,15 +9,15 @@ flsa_graph(gamma, graph, lambda)
 \arguments{
 \item{gamma}{entry vector to regularize}
 
-\item{graph}{graph (an \url{igraph} object) giving the regularization structure}
+\item{graph}{graph (an \linkS4class{igraph} object) giving the regularization structure}
 
 \item{lambda}{regularizing constant}
 }
 \description{
-Wrapper around the function \url{flsa::flsa}.
+Wrapper around the function \code{\link[flsa:flsa]{flsa::flsa}}.
 }
 \references{
 Hoefling, H., A Path Algorithm for the Fused Lasso Signal Approximator,
 Journal of Computational and Graphical Statistics (2010)
-#' \url{https://doi.org/10.1198/jcgs.2010.09208}
+\doi{10.1198/jcgs.2010.09208}
 }

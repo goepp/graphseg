@@ -10,7 +10,7 @@ Description: More about what it does (maybe more than one line)
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
-URL: http://github.com/goepp/graphseg
+URL: https://github.com/goepp/graphseg
 Imports:
   graphics,
   igraph, 
