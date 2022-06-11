@@ -1,3 +1,9 @@
+# Suppress R CMD check note
+# This just imports a function from the package sf, which is needed.
+#' @importFrom sf st_centroid
+NULL
+
+
 #' Segmentation using graph structure
 #' @param gamma entry vector to regularize
 #' @param graph \url{igraph} giving the regularization structure
