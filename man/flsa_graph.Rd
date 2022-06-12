@@ -9,7 +9,7 @@ flsa_graph(gamma, graph, lambda)
 \arguments{
 \item{gamma}{entry vector to regularize}
 
-\item{graph}{graph (an \linkS4class{igraph} object) giving the regularization structure}
+\item{graph}{graph (an \link[igraph]{igraph} object) giving the regularization structure}
 
 \item{lambda}{regularizing constant}
 }

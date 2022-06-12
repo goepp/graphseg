@@ -41,7 +41,7 @@
 #'   7 variables and 650 zones.}
 #'   \item{graph_utrecht_district}{The adjacency graph as an \code{\link{igraph}} object.}
 #' }
-#' @source The data set comes from \url{https://geodata.nationaalgeoregister.nl/cbsgebiedsindelingen/}.
+#' @source The data set comes from \url{https://geodata.nationaalgeoregister.nl/}.
 #' @name utrecht_district
 #' @examples
 #' \dontrun{

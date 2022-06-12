@@ -17,7 +17,7 @@ An object of class \code{sf} (inherits from \code{data.frame}) with 650 rows and
 An object of class \code{igraph} of length 650.
 }
 \source{
-The data set comes from \url{https://geodata.nationaalgeoregister.nl/cbsgebiedsindelingen/}.
+The data set comes from \url{https://geodata.nationaalgeoregister.nl/}.
 }
 \usage{
 utrecht_district

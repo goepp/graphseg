@@ -227,7 +227,7 @@ graph2connlist <- function(graph) {
 #' Segmentation using graph structure and the fused lasso estimate
 #' @description Wrapper around the function \code{\link[flsa:flsa]{flsa::flsa}}.
 #' @param gamma entry vector to regularize
-#' @param graph graph (an \linkS4class{igraph} object) giving the regularization structure
+#' @param graph graph (an \link[igraph]{igraph} object) giving the regularization structure
 #' @param lambda regularizing constant
 #' @importFrom Matrix Cholesky solve update Diagonal
 #' @references Hoefling, H., A Path Algorithm for the Fused Lasso Signal Approximator,
