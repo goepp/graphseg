@@ -15,7 +15,7 @@ Description: Perform segmentation of graph-based signals. Assume a noisy observa
     connected subgraph). The main function, \code{graphseg::agraph}, computes the
     segmentation of the signal. The package also includes a wrapper around the competeting
     method \code{flsa::flsa}.
-License: GPL-3
+License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/goepp/graphseg
@@ -32,4 +32,3 @@ Suggests:
     testthat,
     knitr,
     rmarkdown
-VignetteBuilder: knitr
