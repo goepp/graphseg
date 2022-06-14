@@ -12,9 +12,9 @@ Maintainer: Vivien Goepp <vivien.goepp@gmail.com>
 Description: Perform segmentation of graph-based signals. Assume a noisy observation
     of a signal two values correspond to vertices on a graph. Assume the true 
     value of the signal is piece-wise constant (where each \italic{piece} is a
-    connected subgraph). The main function, \code{graphseg::agraph}, computes the
-    segmentation of the signal. The package also includes a wrapper around the competeting
-    method \code{flsa::flsa}.
+    connected subgraph). The main function, 'agraph', computes the
+    segmentation of the signal. The package also includes a wrapper around the competing
+    method 'flsa' (from package 'flsa').
 License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8
 LazyData: true
