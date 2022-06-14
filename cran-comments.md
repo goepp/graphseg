@@ -1,4 +1,6 @@
 This is the first submission of this package to CRAN.
+The last submission was cancelled at my asking. Since then I corrected the 
+version number (1.0.0) and removed misspells in DESCRIPTION.
 
 ## Test environments
 Tested on the 3 environments used by `rhub::check_for_cran()`.
@@ -8,7 +10,7 @@ Tested on the 3 environments used by `rhub::check_for_cran()`.
 
 
 ## R CMD check results
-All 3 environments returns the below NOTE:
+All 3 environments return the below NOTE:
 
 * checking CRAN incoming feasibility ... NOTE
 Maintainer: 'Vivien Goepp <vivien.goepp@gmail.com>'
