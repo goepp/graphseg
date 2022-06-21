@@ -18,12 +18,7 @@ Geographical data of the French administrative units "département"
 This data set excludes overseas departement as well as the two departements of the island of Corsica.
 }
 \examples{
-\dontrun{
-## Using "plot"
-plot(departement)
-## Using "ggplot"
-library(ggplot)
-ggplot(departement) + geom_sf()
-}
+data(departement)
+plot(departement["geometry"])
 }
 \keyword{datasets}

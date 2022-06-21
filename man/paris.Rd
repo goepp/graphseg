@@ -21,13 +21,7 @@ Geographical data of the French statistical units "IRIS" (\emph{grouped islets f
 Five iris units (forming two parcs: that of Boulogne and Vincennes) of dispropotionate size have been removed from the data set.
 }
 \examples{
-\dontrun{
-library(graphseg)
-## Using "plot"
+data(paris)
 plot(paris["geometry"])
-## Using "ggplot"
-library(ggplot)
-ggplot(paris) + geom_sf()
-}
 }
 \keyword{datasets}

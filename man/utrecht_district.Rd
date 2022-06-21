@@ -27,30 +27,4 @@ graph_utrecht_district
 \description{
 Geographical data of the Dutch administrative units "District".
 }
-\examples{
-\dontrun{
-data(utrecht_district); data(graph_utrecht_district)
-library(sf)
-coord <- sf::st_coordinates(st_centroid(utrecht_district))
-adj_municip <- igraph::as_adjacency_matrix(graph_utrecht_district, type = "both") \%>\%
-  as("symmetricMatrix") \%>\% as("dsTMatrix")
-edge_list <- data.frame(adj_municip@i + 1, adj_municip@j + 1)
-segment_df <- cbind(coord[edge_list[, 1], ], coord[edge_list[, 2], ])
-ptmat <- segment_df[, 1:4] \%>\%
-  as.matrix() \%>\%
-  .[2:nrow(.), ]
-linesegs <- split(ptmat, 1:nrow(ptmat)) \%>\%
-  lapply(., function(x) {
-    x <- matrix(x, nrow = 2, byrow = T)
-    x <- st_linestring(x)})
-final_sf <- st_sfc(linesegs) \%>\%
-  st_sf('ID' = 1:length(.))
-op <- par(mar = rep(0, 4))
-plot(sf::st_geometry(utrecht_district), lwd = 0.6, border = "grey")
-plot(sf::st_geometry(final_sf), lwd = 0.5, add = TRUE)
-plot(sf::st_centroid(utrecht_district), add = TRUE, col = "black", pch = 20,
-     cex = 0.5)
-par(op)
-}
-}
 \keyword{datasets}
