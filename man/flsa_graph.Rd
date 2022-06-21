@@ -14,7 +14,7 @@ flsa_graph(gamma, graph, lambda)
 \item{lambda}{regularizing constant}
 }
 \description{
-Wrapper around the function \code{\link[flsa:flsa]{flsa::flsa}}.
+Wrapper around the function \code{flsa::flsa}.
 }
 \references{
 Hoefling, H., A Path Algorithm for the Fused Lasso Signal Approximator,

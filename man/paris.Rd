@@ -8,7 +8,10 @@
 An \link[sf]{sf} object, with lattitude and longitude
 }
 \source{
-The data set comes from the French National Statistics Institute and the National Geography Institute. It is accessible at \url{www.data.gouv.fr/fr/datasets/contours-iris-insee-ign/}, under the "Licence Ouverte / Open Licence v2.0" licence.
+The data set comes from the French National Statistics Institute and
+the National Geography Institute. It is accessible at
+\url{https://www.data.gouv.fr/fr/datasets/contours-iris-insee-ign/},
+under the "Licence Ouverte / Open Licence v2.0" licence.
 }
 \usage{
 paris

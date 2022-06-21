@@ -225,7 +225,7 @@ graph2connlist <- function(graph) {
   return(connlist)
 }
 #' Segmentation using graph structure and the fused lasso estimate
-#' @description Wrapper around the function \code{\link[flsa:flsa]{flsa::flsa}}.
+#' @description Wrapper around the function \code{flsa::flsa}.
 #' @param gamma entry vector to regularize
 #' @param graph graph (an \link[igraph]{igraph} object) giving the regularization structure
 #' @param lambda regularizing constant

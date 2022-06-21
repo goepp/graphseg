@@ -33,7 +33,7 @@ agraph_prec(
 \arguments{
 \item{gamma}{entry vector to regularize}
 
-\item{graph}{graph (an \url{igraph} object) giving the regularization structure}
+\item{graph}{an igraph object (from package \code{igraph}) giving the regularization structure}
 
 \item{lambda}{regularizing constant}
 

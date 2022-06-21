@@ -8,7 +8,7 @@
 An \code{\link[sf]{sf}} object, with lattitude and longitude
 }
 \source{
-The data set comes from \url{github.com/gregoiredavid/france-geojson}, under the "Licence Ouverte / Open Licence v2.0" licence.
+The data set comes from \url{https://github.com/gregoiredavid/france-geojson/}, under the "Licence Ouverte / Open Licence v2.0" licence.
 }
 \usage{
 departement

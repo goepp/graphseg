@@ -17,7 +17,7 @@ agraph_one_lambda(
 \arguments{
 \item{gamma}{entry vector to regularize}
 
-\item{graph}{\url{igraph} giving the regularization structure}
+\item{graph}{an igraph object (from package \code{igraph}) giving the regularization structure}
 
 \item{lambda}{regularizing constant}
 
