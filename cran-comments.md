@@ -1,6 +1,7 @@
 This is the first submission of this package to CRAN.
-The last submission was cancelled at my asking. Since then I corrected the 
-version number (1.0.0) and removed misspells in DESCRIPTION.
+Since last failed submission:
+- I corrected the documentation of dataset 'utrecht_district', correcting the example code.
+- I added the reference paper of the package in the DESCRIPTION file and removed single quotes there
 
 ## Test environments
 Tested on the 3 environments used by `rhub::check_for_cran()`.

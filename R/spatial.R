@@ -6,7 +6,7 @@ NULL
 
 #' Segmentation using graph structure
 #' @param gamma entry vector to regularize
-#' @param graph \url{igraph} giving the regularization structure
+#' @param graph an igraph object (from package \code{igraph}) giving the regularization structure
 #' @param lambda regularizing constant
 #' @param weights weights for gamma. Default value is one.
 #' @param delta Computational constant in the adaptive ridge reweighting formula.
@@ -47,7 +47,7 @@ agraph_one_lambda <- function(gamma, graph, lambda = 1, weights = NULL,
 }
 #' Segmentation using graph structure
 #' @param gamma entry vector to regularize
-#' @param graph graph (an \url{igraph} object) giving the regularization structure
+#' @param graph an igraph object (from package \code{igraph}) giving the regularization structure
 #' @param lambda regularizing constant
 #' @param shrinkage Boolean, defaults TRUE. Whether to return the adaptive ridge estimate as output. If FALSE, the adaptive ridge is used to define a segmentation into zones, and the signal is estimated on each zone using non-penalized estimation.
 #' @param weights weights for gamma. Default value is one.
