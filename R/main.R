@@ -5,6 +5,7 @@ NULL
 
 
 #' Segmentation using graph structure
+#'
 #' @param gamma entry vector to regularize
 #' @param graph an igraph object (from package \code{igraph}) giving the regularization structure
 #' @param lambda regularizing constant
@@ -46,7 +47,20 @@ agraph_one_lambda <- function(gamma, graph, lambda = 1, weights = NULL,
   return(theta)
 }
 #' Segmentation using graph structure
-#' @param gamma entry vector to regularize
+#' @description
+#' These functions provide a clustering of a signal on graph into a piecewise constant
+#' signal on graph. Given a graph and a signal `gamma` assigning a value to each node,
+#' it returns another signal which is constant over subgraphs where `gamma` has
+#' close to equal value. See references.
+#'
+#' Only parameters `gamma` and `graph` need be provided. The other parameters concern
+#' the internals of the estimating procedure and usually do not need to be changed.
+#' `agraph` is the general-purpose function. `agraph_prec` does the same thing as
+#' `agraph` in the case where `gamma` as a covariance structure. It is provided as
+#' the precision matrix `prec`, which has to be a sparse matrix (`Matrix::sparseMatrix`)
+#' for fast computation. See Goepp and van de Kassteele (2021).
+#'
+#' @param gamma input vector to regularize
 #' @param graph an igraph object (from package \code{igraph}) giving the regularization structure
 #' @param lambda regularizing constant
 #' @param shrinkage Boolean, defaults TRUE. Whether to return the adaptive ridge estimate as output. If FALSE, the adaptive ridge is used to define a segmentation into zones, and the signal is estimated on each zone using non-penalized estimation.
@@ -55,8 +69,35 @@ agraph_one_lambda <- function(gamma, graph, lambda = 1, weights = NULL,
 #' @param tol Tolerance to test for convergence of the adaptive ridge
 #' @param thresh Thresholding constant used to fuse two adjacent regions with close value of \code{gamma}.
 #' @param itermax Total number of iterations. Default value is 10000. Setting a low value can make the procedure return NULL entries for some values of \code{lambda}.
+#' @return A list with the following elements:
+#' \itemize{
+#' \item{\code{result}: matrix whose rows are the segmented output of input signal \code{gamma}, for each value of \code{lambda}}
+#' \item{\code{bic}, \code{gcv}, and \code{aic}: vectors of length \code{length(lambda)}, giving the BIC, GCV, and AIC criteria for each value of lambda. See references below.}
+#' \item{\code{model_dim}, \code{nll}: vectors of length \code{length(lambda)}, giving the model dimension and negative log-likelihood for each value of lambda. See reference below for the definition of these terms.}
+#' }
+#' @references
+#' Schwarz G. (1978)
+#' Estimating the Dimension of a Model.
+#' Ann. Statist. 6 (2) 461 - 464, March, 1978.
+#' \doi{10.1214/aos/1176344136}
+#'
+#' Akaike H. (1974)
+#' A new look at the statistical model identification,
+#' in IEEE Transactions on Automatic Control, vol. 19, no. 6, pp. 716-723, December 1974
+#' \doi{10.1109/TAC.1974.1100705}
+#'
+#' Hastie T., Friedman J., and Tibshirani R. (2009)
+#' The elements of statistical learning: data mining, inference, and prediction (Vol. 2, pp. 1-758).
+#' New York: Springer
+#' \doi{10.1007/978-0-387-21606-5}
+#'
+#' Goepp V. and van de Kassteele J. (2021)
+#' Graph-Based Spatial Segmentation of Health-Related Areal Data,
+#' arxiv preprint.
+#' \doi{10.48550/arXiv.2206.06752}
 #' @importFrom Matrix Cholesky solve update Diagonal
 #' @export
+#' @seealso [graphseg::flsa_graph()]
 agraph <- function(gamma, graph, lambda = 10 ^ seq(-4, 4, length.out = 50),
                    weights = NULL, shrinkage = TRUE,
                    delta = 1e-10, tol = 1e-8,
@@ -215,7 +256,7 @@ graph2connlist <- function(graph) {
   connlist <- igraph::as_adj_list(graph) %>%
     lapply(as.character) %>%
     lapply(as.numeric) %>%
-    lapply(function(a) a - 1) %>%
+    # lapply(function(a) a - 1) %>%
     lapply(function(a) {
       attributes(a) <- NULL
       return(a)
@@ -225,15 +266,29 @@ graph2connlist <- function(graph) {
   return(connlist)
 }
 #' Segmentation using graph structure and the fused lasso estimate
-#' @description Wrapper around the function \code{flsa::flsa}.
+#'
+#' @description Wrapper around the function \code{flsa::flsa}, which computes the
+#' fused lasso signal approximator (see reference). Like `agraph`, this function
+#' takes a signal on graph and returns a clustering thereof into a piecewise-constant
+#' signal. The difference with `agraph` is the estimation method: `agraph` works well when the
+#' true signal is sparse and its computation time scales well to large graphs.
+#'
 #' @param gamma entry vector to regularize
 #' @param graph graph (an \link[igraph]{igraph} object) giving the regularization structure
 #' @param lambda regularizing constant
 #' @importFrom Matrix Cholesky solve update Diagonal
-#' @references Hoefling, H., A Path Algorithm for the Fused Lasso Signal Approximator,
+#' @seealso [graphseg::agraph()]
+#' @references
+#' Hoefling, H., A Path Algorithm for the Fused Lasso Signal Approximator,
 #' Journal of Computational and Graphical Statistics (2010)
 #' \doi{10.1198/jcgs.2010.09208}
 #' @export
+#' @return A list with the following elements:
+#' \itemize{
+#' \item{\code{result}: matrix whose rows are the segmented output of input signal \code{gamma}, for each value of \code{lambda}}
+#' \item{\code{bic}, \code{gcv}, and \code{aic}: vectors of length \code{length(lambda)}, giving the BIC, GCV, and AIC criteria for each value of lambda. See references below.}
+#' \item{\code{model_dim}, \code{nll}: vectors of length \code{length(lambda)}, giving the model dimension and negative log-likelihood for each value of lambda. See reference below for the definition of these terms.}
+#' }
 flsa_graph <- function(gamma, graph, lambda) {
   flsa_fit <- flsa::flsa(gamma, connListObj = graph2connlist(graph),
                          lambda2 = lambda)
