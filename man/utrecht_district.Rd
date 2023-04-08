@@ -7,9 +7,9 @@
 \title{Administrative areas of the Netherlands aroung the city of Utrecht}
 \format{
 \describe{
-  \item{utrecht_district}{An \code{\link[sf]{sf}} object, with lattitude and longitude. With
-  7 variables and 650 zones.}
-  \item{graph_utrecht_district}{The adjacency graph as an \code{\link{igraph}} object.}
+\item{utrecht_district}{An \code{\link[sf]{sf}} object, with lattitude and longitude. With
+7 variables and 650 zones.}
+\item{graph_utrecht_district}{The adjacency graph as an \code{\link{igraph}} object.}
 }
 
 An object of class \code{sf} (inherits from \code{data.frame}) with 650 rows and 7 columns.
@@ -26,5 +26,25 @@ graph_utrecht_district
 }
 \description{
 Geographical data of the Dutch administrative units "District".
+}
+\examples{
+data(utrecht_district); data(graph_utrecht_district)
+coord <- sf::st_coordinates(sf::st_centroid(utrecht_district))
+adj_municip <- as(as(igraph::as_adjacency_matrix(graph_utrecht_district, type = "both"),
+                     "symmetricMatrix"),
+                  "dsTMatrix")
+edge_list <- data.frame(adj_municip@i + 1, adj_municip@j + 1)
+segment_df <- cbind(coord[edge_list[, 1], ], coord[edge_list[, 2], ])
+ptmat <- as.matrix(segment_df[, 1:4])[2:nrow(segment_df), ]
+linesegs <- lapply(split(ptmat, 1:nrow(ptmat)), function(x) {
+    x <- matrix(x, nrow = 2, byrow = TRUE)
+    x <- sf::st_linestring(x)})
+final_sf <- sf::st_sf(sf::st_sfc(linesegs), 'ID' = 1:length(sf::st_sfc(linesegs)))
+op <- par(mar = rep(0, 4))
+plot(sf::st_geometry(utrecht_district), lwd = 0.6, border = "grey")
+plot(sf::st_geometry(final_sf), lwd = 0.5, add = TRUE)
+plot(sf::st_centroid(utrecht_district), add = TRUE, col = "black", pch = 20,
+     cex = 0.5)
+par(op)
 }
 \keyword{datasets}
