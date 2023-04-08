@@ -6,5 +6,6 @@ inst/doc
 use_laplacian.R
 crossprod.R
 chol_solve.R
+/sandbox/*
 R/spatial_old.R
 R/spatial_deprec.R
