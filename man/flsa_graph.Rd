@@ -13,11 +13,26 @@ flsa_graph(gamma, graph, lambda)
 
 \item{lambda}{regularizing constant}
 }
+\value{
+A list with the following elements:
+\itemize{
+\item{\code{result}: matrix whose rows are the segmented output of input signal \code{gamma}, for each value of \code{lambda}}
+\item{\code{bic}, \code{gcv}, and \code{aic}: vectors of length \code{length(lambda)}, giving the BIC, GCV, and AIC criteria for each value of lambda. See references below.}
+\item{\code{model_dim}, \code{nll}: vectors of length \code{length(lambda)}, giving the model dimension and negative log-likelihood for each value of lambda. See reference below for the definition of these terms.}
+}
+}
 \description{
-Wrapper around the function \code{flsa::flsa}.
+Wrapper around the function \code{flsa::flsa}, which computes the
+fused lasso signal approximator (see reference). Like \code{agraph}, this function
+takes a signal on graph and returns a clustering thereof into a piecewise-constant
+signal. The difference with \code{agraph} is the estimation method: \code{agraph} works well when the
+true signal is sparse and its computation time scales well to large graphs.
 }
 \references{
 Hoefling, H., A Path Algorithm for the Fused Lasso Signal Approximator,
 Journal of Computational and Graphical Statistics (2010)
 \doi{10.1198/jcgs.2010.09208}
+}
+\seealso{
+\code{\link[=agraph]{agraph()}}
 }
