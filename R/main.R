@@ -274,7 +274,7 @@ graph2connlist <- function(graph) {
 #' true signal is sparse and its computation time scales well to large graphs.
 #'
 #' @param gamma entry vector to regularize
-#' @param graph graph (an \link[igraph]{igraph} object) giving the regularization structure
+#' @param graph graph (an \linkS4class{igraph} object) giving the regularization structure
 #' @param lambda regularizing constant
 #' @importFrom Matrix Cholesky solve update Diagonal
 #' @seealso [graphseg::agraph()]
