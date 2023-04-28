@@ -2,7 +2,7 @@ Package: graphseg
 Type: Package
 Title: Segmentation of Graph-Based Signals
 Version: 0.1.0
-Author: c(
+Authors@R: c(
   person("Vivien", "Goepp", 
          role = c("aut", "cre"), 
          email = "vivien.goepp@gmail.com",

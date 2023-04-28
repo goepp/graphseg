@@ -40,7 +40,7 @@
 #' coord <- sf::st_coordinates(sf::st_centroid(utrecht_district))
 #' adj_municip <- as(as(igraph::as_adjacency_matrix(graph_utrecht_district, type = "both"),
 #'                      "symmetricMatrix"),
-#'                   "dsTMatrix")
+#'                   "TsparseMatrix")
 #' edge_list <- data.frame(adj_municip@i + 1, adj_municip@j + 1)
 #' segment_df <- cbind(coord[edge_list[, 1], ], coord[edge_list[, 2], ])
 #' ptmat <- as.matrix(segment_df[, 1:4])[2:nrow(segment_df), ]

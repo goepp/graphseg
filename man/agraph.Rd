@@ -61,15 +61,15 @@ A list with the following elements:
 }
 \description{
 These functions provide a clustering of a signal on graph into a piecewise constant
-signal on graph. Given a graph and a signal \code{gamma} assigning a value to each node,
-it returns another signal which is constant over subgraphs where \code{gamma} has
+signal on graph. Given a graph and a signal `gamma` assigning a value to each node,
+it returns another signal which is constant over subgraphs where `gamma` has
 close to equal value. See references.
 
-Only parameters \code{gamma} and \code{graph} need be provided. The other parameters concern
+Only parameters `gamma` and `graph` need be provided. The other parameters concern
 the internals of the estimating procedure and usually do not need to be changed.
-\code{agraph} is the general-purpose function. \code{agraph_prec} does the same thing as
-\code{agraph} in the case where \code{gamma} as a covariance structure. It is provided as
-the precision matrix \code{prec}, which has to be a sparse matrix (\code{Matrix::sparseMatrix})
+`agraph` is the general-purpose function. `agraph_prec` does the same thing as
+`agraph` in the case where `gamma` as a covariance structure. It is provided as
+the precision matrix `prec`, which has to be a sparse matrix (`Matrix::sparseMatrix`)
 for fast computation. See Goepp and van de Kassteele (2021).
 }
 \references{
@@ -94,5 +94,5 @@ arxiv preprint.
 \doi{10.48550/arXiv.2206.06752}
 }
 \seealso{
-\code{\link[=flsa_graph]{flsa_graph()}}
+[graphseg::flsa_graph()]
 }

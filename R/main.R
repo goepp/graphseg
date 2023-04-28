@@ -274,10 +274,10 @@ graph2connlist <- function(graph) {
 #' true signal is sparse and its computation time scales well to large graphs.
 #'
 #' @param gamma entry vector to regularize
-#' @param graph graph (an \linkS4class{igraph} object) giving the regularization structure
+#' @param graph graph (an igraph object) giving the regularization structure
 #' @param lambda regularizing constant
 #' @importFrom Matrix Cholesky solve update Diagonal
-#' @seealso [graphseg::agraph()]
+#' @seealso graphseg::agraph()
 #' @references
 #' Hoefling, H., A Path Algorithm for the Fused Lasso Signal Approximator,
 #' Journal of Computational and Graphical Statistics (2010)

@@ -9,7 +9,7 @@ flsa_graph(gamma, graph, lambda)
 \arguments{
 \item{gamma}{entry vector to regularize}
 
-\item{graph}{graph (an \link[igraph]{igraph} object) giving the regularization structure}
+\item{graph}{graph (an igraph object) giving the regularization structure}
 
 \item{lambda}{regularizing constant}
 }
@@ -23,9 +23,9 @@ A list with the following elements:
 }
 \description{
 Wrapper around the function \code{flsa::flsa}, which computes the
-fused lasso signal approximator (see reference). Like \code{agraph}, this function
+fused lasso signal approximator (see reference). Like `agraph`, this function
 takes a signal on graph and returns a clustering thereof into a piecewise-constant
-signal. The difference with \code{agraph} is the estimation method: \code{agraph} works well when the
+signal. The difference with `agraph` is the estimation method: `agraph` works well when the
 true signal is sparse and its computation time scales well to large graphs.
 }
 \references{
@@ -34,5 +34,5 @@ Journal of Computational and Graphical Statistics (2010)
 \doi{10.1198/jcgs.2010.09208}
 }
 \seealso{
-\code{\link[=agraph]{agraph()}}
+graphseg::agraph()
 }
