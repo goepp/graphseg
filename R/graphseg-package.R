@@ -7,6 +7,6 @@
 #'
 #' @seealso The \code{\link{flsa}} package on CRAN, which performs a similar task
 #'
-#' @docType package
-#' @name graphseg
+#' @keywords internal 
+"_PACKAGE"
 NULL
