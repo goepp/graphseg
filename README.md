@@ -19,7 +19,7 @@ Each administrative region is a vertex of the graph and the edges are given by t
 install.packages("graphseg")
 ```
 
-- Alternatively, the development version of the package can be downloaded from 
+- Alternatively, the development version of the package can be downloaded from this repo:
 ```
 # install.packages("remotes")
 remotes::install_github("goepp/graphseg")
