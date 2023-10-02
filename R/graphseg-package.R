@@ -1,4 +1,4 @@
-#' graphseg: A package for piece-wise constant estimation of graph-based signal
+#' graphseg: A package for piece-wise constant estimation of graph-based signals
 #'
 #' The main function of this package is \code{agraph}, which performs segmentation
 #' of signals on graphs into a piecewise-constant signal.

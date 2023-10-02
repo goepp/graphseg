@@ -4,7 +4,7 @@
 \name{graphseg-package}
 \alias{graphseg}
 \alias{graphseg-package}
-\title{graphseg: A package for piece-wise constant estimation of graph-based signal}
+\title{graphseg: A package for piece-wise constant estimation of graph-based signals}
 \description{
 The main function of this package is \code{agraph}, which performs segmentation
 of signals on graphs into a piecewise-constant signal.
@@ -12,7 +12,7 @@ of signals on graphs into a piecewise-constant signal.
 compatibility).
 }
 \details{
-See \doi{10.48550/arXiv.2206.06752}
+See the corresponding paper: \doi{10.48550/arXiv.2206.06752}
 }
 \seealso{
 The \code{\link{flsa}} package on CRAN, which performs a similar task.
