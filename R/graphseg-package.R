@@ -5,7 +5,7 @@
 #' (the function \code{graph_aridge} is deprecated and kept here for backward
 #' compatibility).
 #'
-#' @seealso The \code{\link{flsa}} package on CRAN, which performs a similar task
+#' See the corresponding paper: \doi{10.48550/arXiv.2206.06752}
 #'
 #' @keywords internal 
 "_PACKAGE"
