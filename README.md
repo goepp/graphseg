@@ -7,11 +7,12 @@ More information in the [associated paper](doi.org/10.48550/arXiv.2206.06752).
 
 This package uses a penalty similar to the graph fused lasso (Hoefling, 2010), except that the penalty on differences between adjacent vertices is given by the adaptive ridge (Liu and Li 2016;  Frommlet and Nuel, 2016).
 
-## Illustration of the package:
+## Illustration
 Here is a small example of segmentation of obesity prevalence (\doi{10.1186/s12942-017-0097-5}) on spatial data from the region of Utrecht, Netherlands.
 Each administrative region is a vertex of the graph and the edges are given by the presence of a shared border between two regions.
+This is illustrated by the figure:
 
-![link to gif](utrecht_gif.gif)
+![Graphical abstract](graphical_abstract.png)
 
 ## How to install the package
 - The package can be downloaded from CRAN:
