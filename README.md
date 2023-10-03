@@ -14,7 +14,7 @@ This is illustrated by the figure:
 
 ![Graphical abstract](graphical_abstract.png)
 
-## How to install the package
+## Installation
 - The package can be downloaded from CRAN:
 ```
 install.packages("graphseg")
@@ -26,7 +26,7 @@ install.packages("graphseg")
 remotes::install_github("goepp/graphseg")
 ```
 
-## Bug repot
+## Bug report
 If you have a problem or suggestion of improvement, please [raise an issue](https://github.com/goepp/graphseg/issues).
 
 ## License

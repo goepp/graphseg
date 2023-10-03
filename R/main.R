@@ -46,6 +46,7 @@ agraph_one_lambda <- function(gamma, graph, lambda = 1, weights = NULL,
   theta <- stats::ave(as.vector(gamma), igraph::components(graph_del)$membership)
   return(theta)
 }
+
 #' Segmentation using graph structure
 #' @description
 #' These functions provide a clustering of a signal on graph into a piecewise constant
