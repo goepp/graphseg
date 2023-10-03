@@ -1,5 +1,4 @@
-This is the first submission of this package to CRAN.
-Since last failed submission I corrected the depreciation warning: "Warning: 'as(<dsCMatrix>, "dsTMatrix")' is deprecated"
+Resubmission for small improvement, see "NEWS.md"
 
 ## Test environments
 Tested on the 3 environments used by `rhub::check_for_cran()`:
