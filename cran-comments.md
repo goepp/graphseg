@@ -13,26 +13,40 @@ And on win-builder
 * R-oldrelease
 
 ## R CMD check results
-All 6 environments return the 2 below NOTEs:
+The 3 check environments from winbuilder return no WARNING or NOTE, except `R-oldrelease`
+which returns the NOTE:
+```
+Found the following (possibly) invalid URLs:
+  URL: https://doi.org/10.1198/jcgs.2010.09208
+    From: README.md
+    Status: 403
+    Message: Forbidden
+```
+The URL does work from the README.md file, so I believe this NOTE can be accepted.
 
-* checking CRAN incoming feasibility ... NOTE
-Maintainer: 'Vivien Goepp <vivien.goepp@gmail.com>'
-New submission
 
-Possibly misspelled words in DESCRIPTION:
-  de (18:57)
-  Goepp (18:43)
-  Kassteele (18:60)
-  
+All 3 environments from `rhub::check_for_cran()` return the NOTE:
+
+```
 * checking HTML version of manual ... NOTE
 Skipping checking HTML validation: no command 'tidy' found
+```
 
-except for Windows Server 2022 which returns the additional NOTE:
+except for Windows Server 2022 which returns the two NOTEs:
 
+```
+* checking for non-standard things in the check directory ... NOTE
+  ''NULL''
+Found the following files/directories:
+```
+```
 * checking for detritus in the temp directory ... NOTE
 Found the following files/directories:
   'lastMiKTeXException'
-  
+```
+
+These notes are documented online to not be due to the package but to the testing platform.
+I think they can be accepted.
 
 
 

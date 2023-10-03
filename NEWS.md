@@ -1,8 +1,7 @@
-# graphseg 0.1.0
+# graphseg 0.1.1
 
-## Added to 0.1.0
+## Added to 0.1.1
 
-* Changed available datasets 
-* Changed documentation
-* Added a `NEWS.md` file to track changes to the package.
+* Changed roxygen alias package wide documentation file: changing the deprecated flag
+`@docType package` for `"_PACKAGE"`.
 
