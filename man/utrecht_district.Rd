@@ -7,9 +7,9 @@
 \title{Administrative areas of the Netherlands aroung the city of Utrecht}
 \format{
 \describe{
-  \item{utrecht_district}{An \code{\link[sf]{sf}} object, with lattitude and longitude. With
-  7 variables and 650 zones.}
-  \item{graph_utrecht_district}{The adjacency graph as an \code{\link{igraph}} object.}
+\item{utrecht_district}{An \code{\link[sf]{sf}} object, with lattitude and longitude. With
+7 variables and 650 zones.}
+\item{graph_utrecht_district}{The adjacency graph as an \code{\link{igraph}} object.}
 }
 
 An object of class \code{sf} (inherits from \code{data.frame}) with 650 rows and 7 columns.

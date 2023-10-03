@@ -20,6 +20,7 @@ Description: Perform segmentation of graph-based signals. Assume a noisy observa
     Health-Related Areal Data" <doi:10.48550/arXiv.2206.06752>.
 License: GPL (>= 3)
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
 LazyData: true
 URL: https://github.com/goepp/graphseg
 Imports:
