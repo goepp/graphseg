@@ -8,11 +8,11 @@ More information in the [associated paper](doi.org/10.48550/arXiv.2206.06752).
 This package uses a penalty similar to the graph fused lasso (Hoefling, 2010), except that the penalty on differences between adjacent vertices is given by the adaptive ridge (Liu and Li 2016;  Frommlet and Nuel, 2016).
 
 ## Illustration
-Here is a small example of segmentation of obesity prevalence (\doi{10.1186/s12942-017-0097-5}) on spatial data from the region of Utrecht, Netherlands.
+Here is a small example of segmentation of obesity prevalence on spatial data from the region of Utrecht, Netherlands (van de Kassteele et al, 2017).
 Each administrative region is a vertex of the graph and the edges are given by the presence of a shared border between two regions.
 This is illustrated by the figure:
 
-![Graphical abstract](graphical_abstract.png)
+![Graphical abstract](man/figure/graphical_abstract.png)
 
 ## Installation
 - The package can be downloaded from CRAN:
@@ -33,7 +33,7 @@ If you have a problem or suggestion of improvement, please [raise an issue](http
 This package is released under the GPLv3 License: see the `LICENSE` file or the [online text](https://www.gnu.org/licenses/gpl-3.0.en.html). In [short](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3)#summary), you can use, modify, and distribute (including for commerical use) this package, with the notable obligations to use the GPLv3 license for your work and to provide a copy of the present source code.
 
 ## References
--
+
 - [0]: Goepp, V. and van de Kassteele, J. (2022). *Graph-Based Spatial Segmentation of Health-Related Areal Data.*, arXiv, [link](doi.org/10.48550/arXiv.2206.06752)
 - [1]: Hoefling, H. (2010), *A Path Algorithm for the Fused Lasso Signal Approximator*, Journal of Computational and Graphical Statistics 19(4), 984-1006, [link](doi.org/10.1198/jcgs.2010.09208)
 - [2]: Liu, Z. and Li, G. (2016), *Efficient Regularized Regression with L0 Penalty for Variable Selection and Network Construction*, Computational and Mathematical Methods in Medicine, 1-11, [link](doi.org/10.1155/2016/3456153)
