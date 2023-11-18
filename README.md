@@ -1,5 +1,7 @@
 # graphseg: segmentation of graph-based signals
 
+[![](https://www.r-pkg.org/badges/version/graphseg?color=green)](https://cran.r-project.org/package=graphseg)
+
 ## What this package does
 Performs estimation of a signal with regularization using the adjacency structure.
 This package has a natural application to spatial data: when we want to have a spatial segmentation of a region-dependent signal, you can apply this package to the adjacency graph of the spatial regions.
