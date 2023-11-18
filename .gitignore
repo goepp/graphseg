@@ -9,3 +9,7 @@ chol_solve.R
 /sandbox/*
 R/spatial_old.R
 R/spatial_deprec.R
+
+# Ignore backup files
+*~
+*.swp
